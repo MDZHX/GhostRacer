@@ -4,8 +4,7 @@
 #include "GameWorld.h"
 #include "Actor.h"
 #include <string>
-
-// Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
+#include <list>
 
 class StudentWorld : public GameWorld
 {
@@ -15,9 +14,12 @@ public:
     virtual int init();
     virtual int move();
     virtual void cleanUp();
+    
+    int calcVspeed(const Actor* actor) const;
 
 private:
     Racer* m_racer;
+    std::list<Actor*> m_actors;
 };
 
 #endif // STUDENTWORLD_H_
