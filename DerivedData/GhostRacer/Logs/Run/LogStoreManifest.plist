@@ -6,6 +6,74 @@
 	<integer>10</integer>
 	<key>logs</key>
 	<dict>
+		<key>08F671D0-8CA6-4AC8-B9F1-D87A5E8167B2</key>
+		<dict>
+			<key>className</key>
+			<string>DBGConsoleLog</string>
+			<key>documentTypeString</key>
+			<string>com.apple.dt.IDE.DebuggerLogContentType</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.DebugLog</string>
+			<key>fileName</key>
+			<string>08F671D0-8CA6-4AC8-B9F1-D87A5E8167B2.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>GhostRacer project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>GhostRacer</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Run GhostRacer</string>
+			<key>timeStartedRecording</key>
+			<real>635456141.82872403</real>
+			<key>timeStoppedRecording</key>
+			<real>635456146.25735903</real>
+			<key>title</key>
+			<string>Run GhostRacer</string>
+			<key>uniqueIdentifier</key>
+			<string>08F671D0-8CA6-4AC8-B9F1-D87A5E8167B2</string>
+		</dict>
+		<key>9C396879-9C3B-4541-9F28-27ED42C78B5D</key>
+		<dict>
+			<key>className</key>
+			<string>DBGConsoleLog</string>
+			<key>documentTypeString</key>
+			<string>com.apple.dt.IDE.DebuggerLogContentType</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.DebugLog</string>
+			<key>fileName</key>
+			<string>9C396879-9C3B-4541-9F28-27ED42C78B5D.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>GhostRacer project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>GhostRacer</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Run GhostRacer</string>
+			<key>timeStartedRecording</key>
+			<real>635455984.69430101</real>
+			<key>timeStoppedRecording</key>
+			<real>635456009.25875795</real>
+			<key>title</key>
+			<string>Run GhostRacer</string>
+			<key>uniqueIdentifier</key>
+			<string>9C396879-9C3B-4541-9F28-27ED42C78B5D</string>
+		</dict>
 		<key>B438AC7C-9ED8-4EB7-B829-5AD8A99A5EB2</key>
 		<dict>
 			<key>className</key>
