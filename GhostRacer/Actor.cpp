@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include "StudentWorld.h"
+#include <cmath>
 
 // Actor
 
@@ -28,6 +29,48 @@ Racer::~Racer()
 
 void Racer::doSomething()
 {
+    if (!alive())
+        return;
+    
+    int ch;
+    if (getWorld()->getKey(ch))
+    {
+        switch (ch)
+        {
+            case KEY_PRESS_SPACE:
+                break;
+            case KEY_PRESS_LEFT:
+                if (getDirection() < RACER_DIR_LEFT_LIM)
+                {
+                    setDirection(getDirection() + RACER_DIR_DELTA);
+                }
+                break;
+            case KEY_PRESS_RIGHT:
+                if (getDirection() > RACER_DIR_RIGHT_LIM)
+                {
+                    setDirection(getDirection() - RACER_DIR_DELTA);
+                }
+                break;
+            case KEY_PRESS_UP:
+                if (getVspeed() < RACER_SPEED_MAX)
+                {
+                    setVspeed(getVspeed() + RACER_SPEED_DELTA);
+                }
+                break;
+            case KEY_PRESS_DOWN:
+                if (getVspeed() > RACER_SPEED_MIN)
+                {
+                    setVspeed(getVspeed() - RACER_SPEED_DELTA);
+                }
+            default:
+                break;
+        }
+    }
+    
+    double max_shift_per_tick = 4.0;
+    int dir = getDirection();
+    double delta_x = cos(dir*1.0 / 360 * 2 * PI) * max_shift_per_tick;
+    moveTo(getX() + delta_x, getY());
 }
 
 // Border
@@ -59,7 +102,7 @@ void Border::doSomething()
 {
     int vert_speed = getWorld()->calcVspeed(this);
     int horiz_speed = getHspeed();
-    GraphObject::moveTo(getX() + horiz_speed, getY() + vert_speed);
+    moveTo(getX() + horiz_speed, getY() + vert_speed);
     
     int curX = getX();
     int curY = getY();

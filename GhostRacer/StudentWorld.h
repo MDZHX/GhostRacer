@@ -6,6 +6,10 @@
 #include <string>
 #include <list>
 
+const int LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH/2;
+const int RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH/2;
+const int NEW_BORDER_Y = VIEW_HEIGHT - SPRITE_HEIGHT;
+
 class StudentWorld : public GameWorld
 {
 public:
@@ -20,6 +24,7 @@ public:
 private:
     Racer* m_racer;
     std::list<Actor*> m_actors;
+    int m_top_border;
 };
 
 #endif // STUDENTWORLD_H_
