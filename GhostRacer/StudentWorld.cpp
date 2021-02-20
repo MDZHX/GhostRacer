@@ -27,15 +27,15 @@ int StudentWorld::init()
     int N = VIEW_HEIGHT / SPRITE_HEIGHT;
     for (int i = 0; i < N; i++)
     {
-        m_actors.push_back(new Border(this, IID_YELLOW_BORDER_LINE, LEFT_EDGE, i * SPRITE_HEIGHT));
-        m_actors.push_back(new Border(this, IID_YELLOW_BORDER_LINE, RIGHT_EDGE, i * SPRITE_HEIGHT));
+        m_actors.push_back(new BorderLine(this, IID_YELLOW_BORDER_LINE, LEFT_EDGE, i * SPRITE_HEIGHT));
+        m_actors.push_back(new BorderLine(this, IID_YELLOW_BORDER_LINE, RIGHT_EDGE, i * SPRITE_HEIGHT));
     }
     
     int M =  VIEW_HEIGHT / (4*SPRITE_HEIGHT);
     for (int i = 0; i < M; i++)
     {
-        m_actors.push_back(new Border(this, IID_WHITE_BORDER_LINE, LEFT_EDGE + ROAD_WIDTH/3, i * (4*SPRITE_HEIGHT)));
-        m_actors.push_back(new Border(this, IID_WHITE_BORDER_LINE, RIGHT_EDGE - ROAD_WIDTH/3, i * (4*SPRITE_HEIGHT)));
+        m_actors.push_back(new BorderLine(this, IID_WHITE_BORDER_LINE, LEFT_EDGE + ROAD_WIDTH/3, i * (4*SPRITE_HEIGHT)));
+        m_actors.push_back(new BorderLine(this, IID_WHITE_BORDER_LINE, RIGHT_EDGE - ROAD_WIDTH/3, i * (4*SPRITE_HEIGHT)));
     }
     
     m_top_border = (M-1) * (4*SPRITE_HEIGHT);
@@ -82,13 +82,13 @@ int StudentWorld::move()
     
     if (delta_y >= SPRITE_HEIGHT)
     {
-        m_actors.push_back(new Border(this, IID_YELLOW_BORDER_LINE, LEFT_EDGE, NEW_BORDER_Y));
-        m_actors.push_back(new Border(this, IID_YELLOW_BORDER_LINE, RIGHT_EDGE, NEW_BORDER_Y));
+        m_actors.push_back(new BorderLine(this, IID_YELLOW_BORDER_LINE, LEFT_EDGE, NEW_BORDER_Y));
+        m_actors.push_back(new BorderLine(this, IID_YELLOW_BORDER_LINE, RIGHT_EDGE, NEW_BORDER_Y));
     }
     if (delta_y >= 4*SPRITE_HEIGHT)
     {
-        m_actors.push_back(new Border(this, IID_WHITE_BORDER_LINE, LEFT_EDGE + ROAD_WIDTH/3, NEW_BORDER_Y));
-        m_actors.push_back(new Border(this, IID_WHITE_BORDER_LINE, RIGHT_EDGE - ROAD_WIDTH/3, NEW_BORDER_Y));
+        m_actors.push_back(new BorderLine(this, IID_WHITE_BORDER_LINE, LEFT_EDGE + ROAD_WIDTH/3, NEW_BORDER_Y));
+        m_actors.push_back(new BorderLine(this, IID_WHITE_BORDER_LINE, RIGHT_EDGE - ROAD_WIDTH/3, NEW_BORDER_Y));
         m_top_border = NEW_BORDER_Y;
     }
     
@@ -98,6 +98,7 @@ int StudentWorld::move()
 void StudentWorld::cleanUp()
 {
     delete m_racer;
+    m_racer = nullptr;
     
     for (list<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); it++)
     {

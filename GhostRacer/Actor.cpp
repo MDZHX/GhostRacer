@@ -73,14 +73,14 @@ void Racer::doSomething()
     moveTo(getX() + delta_x, getY());
 }
 
-// Border
+// BorderLine
 
-Border::Border(StudentWorld* world, int imageID, double startX, double startY)
+BorderLine::BorderLine(StudentWorld* world, int imageID, double startX, double startY)
  : Actor(world, imageID, startX, startY, right, SIZE_BORDER, DEPTH_BORDER, VSPEED_BORDER)
 {
 }
 
-Border::~Border()
+BorderLine::~BorderLine()
 {
 }
 
@@ -98,7 +98,7 @@ Border::~Border()
  VIEW_HEIGHT), it must set its status to not-alive, so it will be removed by
  StudentWorld later in this tick. It must then immediately return.
  */
-void Border::doSomething()
+void BorderLine::doSomething()
 {
     int vert_speed = getWorld()->calcVspeed(this);
     int horiz_speed = getHspeed();

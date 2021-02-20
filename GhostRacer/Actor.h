@@ -90,12 +90,12 @@ public:
 private:
 };
 
-class Border: public Actor
+class BorderLine: public Actor
 {
 public:
-    Border(StudentWorld* world, int imageID, double startX, double startY);
+    BorderLine(StudentWorld* world, int imageID, double startX, double startY);
     
-    virtual ~Border();
+    virtual ~BorderLine();
     
     virtual void doSomething();
 private:
