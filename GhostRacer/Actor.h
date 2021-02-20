@@ -11,10 +11,12 @@ const double SIZE_BORDER = 2.0;
 const int DEPTH_RACER = 0;
 const int DEPTH_BORDER = 2;
 
-const int RACER_Y = VIEW_HEIGHT / 8;
+const int HP_RACER = 100;
 
 const int VSPEED_BORDER = -4;
 
+const int RACER_SPRAYS = 10;
+const int RACER_Y = VIEW_HEIGHT / 8;
 
 const int RACER_DIR_LEFT_LIM = 114;
 const int RACER_DIR_RIGHT_LIM = 66;
@@ -87,7 +89,19 @@ public:
     virtual ~Racer();
     
     virtual void doSomething();
+    
+    int getHP() const
+    {
+        return m_hp;
+    }
+    
+    int getSprays() const
+    {
+        return m_sprays;
+    }
 private:
+    int m_hp;
+    int m_sprays;
 };
 
 class BorderLine: public Actor
