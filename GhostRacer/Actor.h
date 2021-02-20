@@ -25,6 +25,7 @@ const int RACER_DIR_DELTA = 8;
 const int RACER_SPEED_MAX = 5;
 const int RACER_SPEED_MIN = -1;
 const int RACER_SPEED_DELTA = 1;
+const double RACER_MAX_SHIFT_PER_TICK = 4.0;
 
 const double PI = 4 * atan(1.0);
 
@@ -74,11 +75,16 @@ protected:
     {
         m_hspeed = hspeed;
     }
+    
+    void move();
 private:
     StudentWorld* m_world;
     bool m_alive;
     int m_vspeed;
     int m_hspeed;
+    
+    virtual double calcDx() const = 0;
+    virtual double calcDy() const = 0;
 };
 
 class Racer: public Actor
@@ -102,6 +108,9 @@ public:
 private:
     int m_hp;
     int m_sprays;
+    
+    virtual double calcDx() const;
+    virtual double calcDy() const;
 };
 
 class BorderLine: public Actor
@@ -113,5 +122,7 @@ public:
     
     virtual void doSomething();
 private:
+    virtual double calcDx() const;
+    virtual double calcDy() const;
 };
 #endif // ACTOR_H_

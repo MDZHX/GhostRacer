@@ -16,6 +16,11 @@ Actor::~Actor()
 {
 }
 
+void Actor::move()
+{
+    moveTo(getX() + calcDx(), getY() + calcDy());
+}
+
 // Racer
 
 Racer::Racer(StudentWorld* world)
@@ -68,10 +73,17 @@ void Racer::doSomething()
         }
     }
     
-    double max_shift_per_tick = 4.0;
-    int dir = getDirection();
-    double delta_x = cos(dir*1.0 / 360 * 2 * PI) * max_shift_per_tick;
-    moveTo(getX() + delta_x, getY());
+    move();
+}
+
+double Racer::calcDx() const
+{
+    return cos(getDirection()*1.0 / 360 * 2 * PI) * RACER_MAX_SHIFT_PER_TICK;
+}
+
+double Racer::calcDy() const
+{
+    return 0;
 }
 
 // BorderLine
@@ -87,9 +99,7 @@ BorderLine::~BorderLine()
 
 void BorderLine::doSomething()
 {
-    int vert_speed = getWorld()->calcVspeed(this);
-    int horiz_speed = getHspeed();
-    moveTo(getX() + horiz_speed, getY() + vert_speed);
+    move();
     
     int curX = getX();
     int curY = getY();
@@ -98,4 +108,14 @@ void BorderLine::doSomething()
         die();
         return;
     }
+}
+
+double BorderLine::calcDx() const
+{
+    return getHspeed();
+}
+
+double BorderLine::calcDy() const
+{
+    return getWorld()->calcVspeed(this);
 }
