@@ -8,15 +8,17 @@ class StudentWorld;
 const double SIZE_RACER = 4.0;
 const double SIZE_BORDER = 2.0;
 
-const int DEPTH_RACER = 0;
+const int DEPTH_AGENT = 0;
 const int DEPTH_BORDER = 2;
 
 const int HP_RACER = 100;
 
 const int VSPEED_BORDER = -4;
+const int VSPEED_RACER = 0;
 
 const int RACER_SPRAYS = 10;
-const int RACER_Y = VIEW_HEIGHT / 8;
+
+
 
 const int RACER_DIR_LEFT_LIM = 114;
 const int RACER_DIR_RIGHT_LIM = 66;
@@ -32,11 +34,7 @@ const double PI = 4 * atan(1.0);
 class Actor: public GraphObject
 {
 public:
-    Actor(StudentWorld* world,
-          int imageID, double startX, double startY, int dir = 0, double size = 1.0, unsigned int depth = 0,
-          int vspeed = 0, int hspeed = 0);
-    
-    virtual ~Actor();
+    Actor(StudentWorld* world, int imageID, double x, double y, double size, int dir, int depth);
     
     virtual void doSomething() = 0;
     
@@ -45,17 +43,11 @@ public:
         return m_alive;
     }
     
-    int getVspeed() const
+    double getVspeed() const
     {
         return m_vspeed;
     }
-    
-    int getHspeed() const
-    {
-        return m_hspeed;
-    }
 protected:
-// !!!RECONSIDER THIS
     StudentWorld* getWorld() const
     {
         return m_world;
@@ -66,63 +58,92 @@ protected:
         m_alive = false;
     }
     
-    void setVspeed(int vspeed)
+    void setVspeed(double vspeed)
     {
         m_vspeed = vspeed;
     }
     
-    void setHspeed(int hspeed)
+    virtual bool beSprayedIfAppropriate()
     {
-        m_hspeed = hspeed;
+        return false;
+    }
+
+    virtual bool isCollisionAvoidanceWorthy() const
+    {
+        return false;
     }
     
-    void move();
+    virtual bool moveRelative(double dx);
 private:
     StudentWorld* m_world;
     bool m_alive;
-    int m_vspeed;
-    int m_hspeed;
-    
-    virtual double calcDx() const = 0;
-    virtual double calcDy() const = 0;
-};
-
-class Racer: public Actor
-{
-public:
-    Racer(StudentWorld* world);
-    
-    virtual ~Racer();
-    
-    virtual void doSomething();
-    
-    int getHP() const
-    {
-        return m_hp;
-    }
-    
-    int getSprays() const
-    {
-        return m_sprays;
-    }
-private:
-    int m_hp;
-    int m_sprays;
-    
-    virtual double calcDx() const;
-    virtual double calcDy() const;
+    double m_vspeed;
 };
 
 class BorderLine: public Actor
 {
 public:
-    BorderLine(StudentWorld* world, int imageID, double startX, double startY);
-    
-    virtual ~BorderLine();
+    BorderLine(StudentWorld* world, double x, double y, bool isYellow);
     
     virtual void doSomething();
 private:
-    virtual double calcDx() const;
-    virtual double calcDy() const;
+    int getIID(bool isYellow);
 };
+
+class Agent : public Actor
+{
+public:
+    Agent(StudentWorld* sw, int imageID, double x, double y, double size, int dir, int hp);
+    
+    virtual bool isCollisionAvoidanceWorthy() const
+    {
+        return true;
+    }
+
+    int getHP() const
+    {
+        return m_hp;
+    }
+protected:
+    void addHP(int hp)
+    {
+        m_hp += hp;
+    }
+
+    virtual bool takeDamageAndPossiblyDie(int hp);
+
+    virtual int soundWhenHurt();
+
+    virtual int soundWhenDie();
+private:
+    int m_hp;
+};
+
+class Racer : public Agent
+{
+public:
+    Racer(StudentWorld* sw, double x, double y);
+    
+    virtual void doSomething();
+    
+    virtual int soundWhenDie() const
+    {
+        return SOUND_PLAYER_DIE;
+    }
+
+    int getSprays() const
+    {
+        return m_sprays;
+    }
+protected:
+    void addSprays(int amt)
+    {
+        m_sprays += amt;
+    }
+
+    void spin();
+private:
+    int m_sprays;
+};
+
 #endif // ACTOR_H_

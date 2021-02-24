@@ -4,33 +4,66 @@
 
 // Actor
 
-Actor::Actor(StudentWorld* world,
-             int imageID, double startX, double startY, int dir, double size, unsigned int depth,
-             int vspeed, int hspeed)
- : GraphObject(imageID, startX, startY, dir, size, depth),
-   m_world(world), m_alive(true), m_vspeed(vspeed), m_hspeed(hspeed)
+Actor::Actor(StudentWorld* world, int imageID, double x, double y, double size, int dir, int depth)
+ : GraphObject(imageID, x, y, dir, size, depth), m_world(world), m_alive(true)
 {
 }
 
-Actor::~Actor()
+bool Actor::moveRelative(double dx)
+{
+    moveTo(getX() + dx, getY() + getWorld()->calcVspeed(this));
+    int curX = getX();
+    int curY = getY();
+    return curX >= 0 && curY >= 0 && curX <= VIEW_WIDTH && curY <= VIEW_HEIGHT;
+}
+
+// BorderLine
+
+BorderLine::BorderLine(StudentWorld* world, double x, double y, bool isYellow)
+ : Actor(world, getIID(isYellow), x, y, SIZE_BORDER, right, DEPTH_BORDER)
+{
+    setVspeed(VSPEED_BORDER);
+}
+
+void BorderLine::doSomething()
+{
+    if (!moveRelative(0))
+        die();
+}
+
+int BorderLine::getIID(bool isYellow) {
+    return isYellow ? IID_YELLOW_BORDER_LINE : IID_WHITE_BORDER_LINE;
+}
+
+// Agent
+
+Agent::Agent(StudentWorld* sw, int imageID, double x, double y, double size, int dir, int hp)
+: Actor(sw, imageID, x, y, size, dir, DEPTH_AGENT), m_hp(hp)
 {
 }
 
-void Actor::move()
+bool Agent::takeDamageAndPossiblyDie(int hp)
 {
-    moveTo(getX() + calcDx(), getY() + calcDy());
+    return false;
 }
+
+int Agent::soundWhenHurt()
+{
+    return 0;
+}
+
+int Agent::soundWhenDie()
+{
+    return 0;
+}
+
 
 // Racer
 
-Racer::Racer(StudentWorld* world)
- : Actor(world, IID_GHOST_RACER, ROAD_CENTER, RACER_Y, up, SIZE_RACER, DEPTH_RACER),
-   m_hp(HP_RACER), m_sprays(RACER_SPRAYS)
+Racer::Racer(StudentWorld* sw, double x, double y)
+ : Agent(sw, IID_GHOST_RACER, x, y, SIZE_RACER, up, HP_RACER), m_sprays(RACER_SPRAYS)
 {
-}
-
-Racer::~Racer()
-{
+    setVspeed(VSPEED_RACER);
 }
 
 void Racer::doSomething()
@@ -73,49 +106,10 @@ void Racer::doSomething()
         }
     }
     
-    move();
+    moveRelative(cos(getDirection()*1.0 / 360 * 2 * PI) * RACER_MAX_SHIFT_PER_TICK);
 }
 
-double Racer::calcDx() const
+void Racer::spin()
 {
-    return cos(getDirection()*1.0 / 360 * 2 * PI) * RACER_MAX_SHIFT_PER_TICK;
-}
-
-double Racer::calcDy() const
-{
-    return 0;
-}
-
-// BorderLine
-
-BorderLine::BorderLine(StudentWorld* world, int imageID, double startX, double startY)
- : Actor(world, imageID, startX, startY, right, SIZE_BORDER, DEPTH_BORDER, VSPEED_BORDER)
-{
-}
-
-BorderLine::~BorderLine()
-{
-}
-
-void BorderLine::doSomething()
-{
-    move();
     
-    int curX = getX();
-    int curY = getY();
-    if (curX < 0 || curY < 0 || curX > VIEW_WIDTH || curY > VIEW_HEIGHT)
-    {
-        die();
-        return;
-    }
-}
-
-double BorderLine::calcDx() const
-{
-    return getHspeed();
-}
-
-double BorderLine::calcDy() const
-{
-    return getWorld()->calcVspeed(this);
 }

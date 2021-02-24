@@ -27,7 +27,7 @@ int StudentWorld::init()
     m_souls2save = calcSouls2Save();
     m_bonus = MAX_BONUS;
     
-    m_racer = new Racer(this);
+    m_racer = new Racer(this, ROAD_CENTER, RACER_Y);
     
     initBorders();
     
@@ -74,7 +74,7 @@ void StudentWorld::cleanUp()
     m_actors.clear();
 }
 
-int StudentWorld::calcVspeed(const Actor *actor) const
+double StudentWorld::calcVspeed(const Actor *actor) const
 {
     return actor->getVspeed() - m_racer->getVspeed();
 }
@@ -84,16 +84,16 @@ int StudentWorld::calcSouls2Save() const
     return 2 * getLevel() + 5;
 }
 
-void StudentWorld::createWhiteBorder(int y)
+void StudentWorld::createWhiteBorders(int y)
 {
-    m_actors.push_back(new BorderLine(this, IID_WHITE_BORDER_LINE, LEFT_EDGE + ROAD_WIDTH/3, y));
-    m_actors.push_back(new BorderLine(this, IID_WHITE_BORDER_LINE, RIGHT_EDGE - ROAD_WIDTH/3, y));
+    m_actors.push_back(new BorderLine(this, LEFT_EDGE + ROAD_WIDTH/3, y, false));
+    m_actors.push_back(new BorderLine(this, RIGHT_EDGE - ROAD_WIDTH/3, y, false));
 }
 
-void StudentWorld::createYellowBorder(int y)
+void StudentWorld::createYellowBorders(int y)
 {
-    m_actors.push_back(new BorderLine(this, IID_YELLOW_BORDER_LINE, LEFT_EDGE, y));
-    m_actors.push_back(new BorderLine(this, IID_YELLOW_BORDER_LINE, RIGHT_EDGE, y));
+    m_actors.push_back(new BorderLine(this, LEFT_EDGE, y, true));
+    m_actors.push_back(new BorderLine(this, RIGHT_EDGE, y, true));
 }
 
 void StudentWorld::initBorders()
@@ -101,13 +101,13 @@ void StudentWorld::initBorders()
     int N = VIEW_HEIGHT / SPRITE_HEIGHT;
     for (int i = 0; i < N; i++)
     {
-        createYellowBorder(i * SPRITE_HEIGHT);
+        createYellowBorders(i * SPRITE_HEIGHT);
     }
     
     int M =  VIEW_HEIGHT / (HEIGHT_WHITE_BORDER);
     for (int i = 0; i < M; i++)
     {
-        createWhiteBorder(i * (HEIGHT_WHITE_BORDER));
+        createWhiteBorders(i * (HEIGHT_WHITE_BORDER));
     }
     
     m_top_border = (M-1) * (HEIGHT_WHITE_BORDER);
@@ -119,11 +119,11 @@ void StudentWorld::addBorders()
     int delta_y = NEW_BORDER_Y - m_top_border;
     if (delta_y >= SPRITE_HEIGHT)
     {
-        createYellowBorder(NEW_BORDER_Y);
+        createYellowBorders(NEW_BORDER_Y);
     }
     if (delta_y >= HEIGHT_WHITE_BORDER)
     {
-        createWhiteBorder(NEW_BORDER_Y);
+        createWhiteBorders(NEW_BORDER_Y);
         m_top_border = NEW_BORDER_Y;
     }
 }

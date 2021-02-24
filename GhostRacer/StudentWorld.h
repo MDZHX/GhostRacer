@@ -2,12 +2,16 @@
 #define STUDENTWORLD_H_
 
 #include "GameWorld.h"
-#include "Actor.h"
 #include <string>
 #include <list>
 
+class Actor;
+class Racer;
+
 const int LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH/2;
 const int RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH/2;
+
+const int RACER_Y = VIEW_HEIGHT / 8;
 const int NEW_BORDER_Y = VIEW_HEIGHT - SPRITE_HEIGHT;
 
 const int HEIGHT_WHITE_BORDER = 4 * SPRITE_HEIGHT;
@@ -23,7 +27,7 @@ public:
     virtual int move();
     virtual void cleanUp();
     
-    int calcVspeed(const Actor* actor) const;
+    double calcVspeed(const Actor* actor) const;
 private:
     Racer* m_racer;
     std::list<Actor*> m_actors;
@@ -33,8 +37,8 @@ private:
     
     int calcSouls2Save() const;
     
-    void createWhiteBorder(int y);
-    void createYellowBorder(int y);
+    void createWhiteBorders(int y);
+    void createYellowBorders(int y);
     void initBorders();
     void addBorders();
     void deleteDeadActors();
