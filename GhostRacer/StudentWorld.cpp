@@ -5,6 +5,7 @@
 #include <sstream>  // defines the type std::ostringstream
 #include <string>
 #include <list>
+#include <cmath>
 using namespace std;
 
 GameWorld* createStudentWorld(string assetPath)
@@ -56,6 +57,10 @@ int StudentWorld::move()
     
     deleteDeadActors();
     
+    int soul = randInt(0, CHANCE_OF_LOST_SOUL - 1);
+    if (soul == 0)
+        m_actors.push_back(new SoulGoodie(this, randInt(LEFT_EDGE + 1, RIGHT_EDGE - 1), VIEW_HEIGHT));
+    
     addBorders();
     
     return updateGameStatAndReturn(GWSTATUS_CONTINUE_GAME);
@@ -74,9 +79,30 @@ void StudentWorld::cleanUp()
     m_actors.clear();
 }
 
+Racer* StudentWorld::getOverlappingGhostRacer(const Actor* a) const
+{
+    if (overlaps(m_racer, a))
+        return m_racer;
+    return nullptr;
+}
+
+void StudentWorld::recordSoulSaved()
+{
+    if (m_souls2save > 0)
+        m_souls2save--;
+}
+
 double StudentWorld::calcVspeed(const Actor *actor) const
 {
     return actor->getVspeed() - m_racer->getVspeed();
+}
+
+bool StudentWorld::overlaps(const Actor* a1, const Actor* a2) const
+{
+    double delta_x = abs(a1->getX() - a2->getX());
+    double delta_y = abs(a1->getY() - a2->getY());
+    double radius_sum = a1->getRadius() + a2->getRadius();
+    return delta_x < radius_sum * OVERLAP_FACTOR_X && delta_y < radius_sum * OVERLAP_FACTOR_Y;
 }
 
 int StudentWorld::calcSouls2Save() const
@@ -172,6 +198,11 @@ int StudentWorld::updateGameStatAndReturn(const int status)
     if (status == GWSTATUS_FINISHED_LEVEL)
     {
         increaseScore(m_bonus);
+        playSound(SOUND_FINISHED_LEVEL);
+    }
+    else if (status == GWSTATUS_PLAYER_DIED)
+    {
+        decLives();
     }
     return status;
 }

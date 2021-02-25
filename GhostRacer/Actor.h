@@ -7,14 +7,21 @@ class StudentWorld;
 
 const double SIZE_RACER = 4.0;
 const double SIZE_BORDER = 2.0;
+const double SIZE_SOUL = 4.0;
 
 const int DEPTH_AGENT = 0;
 const int DEPTH_BORDER = 2;
+const int DEPTH_ACTIVATED_OBJECT = 2;
+
+const int SCORE_SOUL = 100;
+
+const int SOUL_ROTATION_DELTA = 10;
 
 const int HP_RACER = 100;
 
 const int VSPEED_BORDER = -4;
 const int VSPEED_RACER = 0;
+const int VSPEED_ACTIVATED_OBJECT = -4;
 
 const int RACER_SPRAYS = 10;
 
@@ -99,17 +106,17 @@ class Agent : public Actor
 {
 public:
     Agent(StudentWorld* sw, int imageID, double x, double y, double size, int dir, int hp);
-    
-    virtual bool isCollisionAvoidanceWorthy() const
-    {
-        return true;
-    }
 
     int getHP() const
     {
         return m_hp;
     }
 protected:
+    virtual bool isCollisionAvoidanceWorthy() const
+    {
+        return true;
+    }
+    
     void addHP(int hp)
     {
         m_hp += hp;
@@ -141,7 +148,7 @@ public:
     {
         return m_sprays;
     }
-protected:
+private:
     virtual int soundWhenDie() const
     {
         return SOUND_PLAYER_DIE;
@@ -155,6 +162,57 @@ protected:
     void spin();
 private:
     int m_sprays;
+};
+
+class GhostRacerActivatedObject : public Actor
+{
+public:
+    GhostRacerActivatedObject(StudentWorld* sw, int imageID, double x, double y, double size, int dir);
+protected:
+    virtual bool beSprayedIfAppropriate();
+
+    virtual void doActivity(Racer* gr) = 0;
+
+    virtual int getScoreIncrease() const = 0;
+
+    virtual int getSound() const
+    {
+        return SOUND_GOT_GOODIE;
+    }
+
+    virtual bool selfDestructs() const = 0;
+
+    virtual bool isSprayable() const = 0;
+};
+
+class SoulGoodie : public GhostRacerActivatedObject
+{
+public:
+    SoulGoodie(StudentWorld* sw, double x, double y);
+    
+    virtual void doSomething();
+protected:
+    virtual void doActivity(Racer* gr);
+    
+    virtual int getScoreIncrease() const
+    {
+        return SCORE_SOUL;
+    }
+    
+    virtual int getSound() const
+    {
+        return SOUND_GOT_SOUL;
+    }
+    
+    virtual bool selfDestructs() const
+    {
+        return true;
+    }
+    
+    virtual bool isSprayable() const
+    {
+        return false;
+    }
 };
 
 #endif // ACTOR_H_

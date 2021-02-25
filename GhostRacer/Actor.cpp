@@ -124,3 +124,48 @@ void Racer::spin()
 {
     
 }
+
+
+GhostRacerActivatedObject::GhostRacerActivatedObject(StudentWorld* sw, int imageID, double x, double y, double size, int dir)
+ : Actor(sw, imageID, x, y, size, dir, DEPTH_ACTIVATED_OBJECT)
+{
+    setVspeed(VSPEED_ACTIVATED_OBJECT);
+}
+
+bool GhostRacerActivatedObject::beSprayedIfAppropriate()
+{
+    if (isSprayable())
+    {
+        die();
+        return true;
+    }
+    return false;
+}
+
+SoulGoodie::SoulGoodie(StudentWorld* sw, double x, double y)
+ : GhostRacerActivatedObject(sw, IID_SOUL_GOODIE, x, y, SIZE_SOUL, right)
+{
+}
+
+void SoulGoodie::doSomething()
+{
+    if (!moveRelative(0))
+        die();
+    else
+    {
+        if (getWorld()->getOverlappingGhostRacer(this) != nullptr)
+        {
+            doActivity(nullptr);
+            if (selfDestructs())
+                die();
+            getWorld()->playSound(getSound());
+            getWorld()->increaseScore(getScoreIncrease());
+        }
+        setDirection((getDirection() + 360 - SOUL_ROTATION_DELTA) % 360);
+    }
+}
+
+void SoulGoodie::doActivity(Racer* gr)
+{
+    getWorld()->recordSoulSaved();
+}

@@ -18,6 +18,11 @@ const int HEIGHT_WHITE_BORDER = 4 * SPRITE_HEIGHT;
 
 const int MAX_BONUS = 5000;
 
+const double OVERLAP_FACTOR_X = 0.25;
+const double OVERLAP_FACTOR_Y = 0.6;
+
+const int CHANCE_OF_LOST_SOUL = 100;
+
 class StudentWorld : public GameWorld
 {
 public:
@@ -27,6 +32,9 @@ public:
     virtual int move();
     virtual void cleanUp();
     
+    Racer* getOverlappingGhostRacer(const Actor* a) const;
+    void recordSoulSaved();
+    
     double calcVspeed(const Actor* actor) const;
 private:
     Racer* m_racer;
@@ -34,6 +42,8 @@ private:
     int m_top_border;
     int m_souls2save;
     int m_bonus;
+    
+    bool overlaps(const Actor* a1, const Actor* a2) const;
     
     int calcSouls2Save() const;
     
