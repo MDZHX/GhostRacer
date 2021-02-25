@@ -18,16 +18,21 @@ const int VSPEED_RACER = 0;
 
 const int RACER_SPRAYS = 10;
 
-
-
 const int RACER_DIR_LEFT_LIM = 114;
 const int RACER_DIR_RIGHT_LIM = 66;
 const int RACER_DIR_DELTA = 8;
+const int RACER_AWAY_FROM_LEFT = 82;
+const int RACER_AWAY_FROM_RIGHT = 98;
 
 const int RACER_SPEED_MAX = 5;
 const int RACER_SPEED_MIN = -1;
 const int RACER_SPEED_DELTA = 1;
 const double RACER_MAX_SHIFT_PER_TICK = 4.0;
+
+const int DAMAGE_CRASH = 10;
+
+
+
 
 const double PI = 4 * atan(1.0);
 
@@ -112,9 +117,15 @@ protected:
 
     virtual bool takeDamageAndPossiblyDie(int hp);
 
-    virtual int soundWhenHurt();
+    virtual int soundWhenHurt()
+    {
+        return SOUND_NONE;
+    }
 
-    virtual int soundWhenDie();
+    virtual int soundWhenDie()
+    {
+        return 0;
+    }
 private:
     int m_hp;
 };
@@ -125,17 +136,17 @@ public:
     Racer(StudentWorld* sw, double x, double y);
     
     virtual void doSomething();
-    
-    virtual int soundWhenDie() const
-    {
-        return SOUND_PLAYER_DIE;
-    }
 
     int getSprays() const
     {
         return m_sprays;
     }
 protected:
+    virtual int soundWhenDie() const
+    {
+        return SOUND_PLAYER_DIE;
+    }
+    
     void addSprays(int amt)
     {
         m_sprays += amt;

@@ -44,19 +44,15 @@ Agent::Agent(StudentWorld* sw, int imageID, double x, double y, double size, int
 
 bool Agent::takeDamageAndPossiblyDie(int hp)
 {
+    m_hp -= hp;
+    if (m_hp <= 0)
+    {
+        die();
+        getWorld()->playSound(soundWhenDie());
+        return true;
+    }
     return false;
 }
-
-int Agent::soundWhenHurt()
-{
-    return 0;
-}
-
-int Agent::soundWhenDie()
-{
-    return 0;
-}
-
 
 // Racer
 
@@ -71,41 +67,56 @@ void Racer::doSomething()
     if (!alive())
         return;
     
-    int ch;
-    if (getWorld()->getKey(ch))
+    if (getX() <= LEFT_EDGE && getDirection() > up)
     {
-        switch (ch)
+        takeDamageAndPossiblyDie(DAMAGE_CRASH);
+        setDirection(RACER_AWAY_FROM_LEFT);
+        getWorld()->playSound(SOUND_VEHICLE_CRASH);
+    }
+    else if (getX() >= RIGHT_EDGE && getDirection() < up)
+    {
+        takeDamageAndPossiblyDie(DAMAGE_CRASH);
+        setDirection(RACER_AWAY_FROM_RIGHT);
+        getWorld()->playSound(SOUND_VEHICLE_CRASH);
+    }
+    else
+    {
+        int ch;
+        if (getWorld()->getKey(ch))
         {
-            case KEY_PRESS_SPACE:
-                break;
-            case KEY_PRESS_LEFT:
-                if (getDirection() < RACER_DIR_LEFT_LIM)
-                {
-                    setDirection(getDirection() + RACER_DIR_DELTA);
-                }
-                break;
-            case KEY_PRESS_RIGHT:
-                if (getDirection() > RACER_DIR_RIGHT_LIM)
-                {
-                    setDirection(getDirection() - RACER_DIR_DELTA);
-                }
-                break;
-            case KEY_PRESS_UP:
-                if (getVspeed() < RACER_SPEED_MAX)
-                {
-                    setVspeed(getVspeed() + RACER_SPEED_DELTA);
-                }
-                break;
-            case KEY_PRESS_DOWN:
-                if (getVspeed() > RACER_SPEED_MIN)
-                {
-                    setVspeed(getVspeed() - RACER_SPEED_DELTA);
-                }
-            default:
-                break;
+            switch (ch)
+            {
+                case KEY_PRESS_SPACE:
+                    break;
+                case KEY_PRESS_LEFT:
+                    if (getDirection() < RACER_DIR_LEFT_LIM)
+                    {
+                        setDirection(getDirection() + RACER_DIR_DELTA);
+                    }
+                    break;
+                case KEY_PRESS_RIGHT:
+                    if (getDirection() > RACER_DIR_RIGHT_LIM)
+                    {
+                        setDirection(getDirection() - RACER_DIR_DELTA);
+                    }
+                    break;
+                case KEY_PRESS_UP:
+                    if (getVspeed() < RACER_SPEED_MAX)
+                    {
+                        setVspeed(getVspeed() + RACER_SPEED_DELTA);
+                    }
+                    break;
+                case KEY_PRESS_DOWN:
+                    if (getVspeed() > RACER_SPEED_MIN)
+                    {
+                        setVspeed(getVspeed() - RACER_SPEED_DELTA);
+                    }
+                default:
+                    break;
+            }
         }
     }
-    
+          
     moveRelative(cos(getDirection()*1.0 / 360 * 2 * PI) * RACER_MAX_SHIFT_PER_TICK);
 }
 
