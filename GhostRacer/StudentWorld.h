@@ -21,10 +21,12 @@ const int MAX_BONUS = 5000;
 const double OVERLAP_MULTIPLIER_X = 0.25;
 const double OVERLAP_MULTIPLIER_Y = 0.6;
 
-const int CHANCE_OF_LOST_SOUL = 100;
 const int CHANCE_OF_OIL_MAX = 150;
 const int CHANCE_OF_OIL_MULTIPLIER = 10;
 const int CHANCE_OF_OIL_MIN = 40;
+const int CHANCE_OF_REFILL_BASE = 100;
+const int CHANCE_OF_REFILL_MULTIPLIER = 10;
+const int CHANCE_OF_LOST_SOUL = 100;
 
 class StudentWorld : public GameWorld
 {

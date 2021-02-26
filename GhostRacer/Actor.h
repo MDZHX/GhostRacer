@@ -11,6 +11,7 @@ const double SIZE_SPRAY = 1.0;
 const int SIZE_OIL_LOWER = 2;
 const int SIZE_OIL_UPPER = 5;
 const double SIZE_HEALING = 1.0;
+const double SIZE_REFILL = 2.0;
 const double SIZE_SOUL = 4.0;
 
 const int DEPTH_AGENT = 0;
@@ -18,8 +19,11 @@ const int DEPTH_BORDER = 2;
 const int DEPTH_SPRAY = 1;
 const int DEPTH_ACTIVATED_OBJECT = 2;
 
-const int SCORE_SOUL = 100;
 const int SCORE_HEALING = 250;
+const int SCORE_REFILL = 50;
+const int SCORE_SOUL = 100;
+
+const int REFILL = 10;
 
 const int SOUL_ROTATION_DELTA = 10;
 
@@ -156,25 +160,26 @@ public:
         return m_sprays;
     }
     
-    void spin();
-private:
-    virtual int soundWhenDie() const
-    {
-        return SOUND_PLAYER_DIE;
-    }
-    
     void addSprays(int amt)
     {
         m_sprays += amt;
     }
+    
+    void spin();
 private:
     int m_sprays;
+    
+    virtual int soundWhenDie() const
+    {
+        return SOUND_PLAYER_DIE;
+    }
 };
 
 class Spray : public Actor
 {
 public:
     Spray(StudentWorld* sw, double x, double y, int dir);
+    
     virtual void doSomething();
 private:
     int m_distance;
@@ -235,6 +240,7 @@ class HealingGoodie : public GhostRacerActivatedObject
 {
 public:
     HealingGoodie(StudentWorld* sw, double x, double y);
+    
     virtual void doSomething();
 protected:
     virtual void doActivity(Racer* gr);
@@ -242,6 +248,31 @@ protected:
     virtual int getScoreIncrease() const
     {
         return SCORE_HEALING;
+    }
+    
+    virtual bool selfDestructs() const
+    {
+        return true;
+    }
+    
+    virtual bool isSprayable() const
+    {
+        return true;
+    }
+};
+
+class HolyWaterGoodie : public GhostRacerActivatedObject
+{
+public:
+    HolyWaterGoodie(StudentWorld* sw, double x, double y);
+    
+    virtual void doSomething();
+protected:
+    virtual void doActivity(Racer* gr);
+    
+    virtual int getScoreIncrease() const
+    {
+        return SCORE_REFILL;
     }
     
     virtual bool selfDestructs() const
@@ -284,6 +315,5 @@ protected:
         return false;
     }
 };
-
 
 #endif // ACTOR_H_

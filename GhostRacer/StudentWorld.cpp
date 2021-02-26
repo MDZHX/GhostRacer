@@ -65,6 +65,9 @@ int StudentWorld::move()
     if (oilSlick == 0)
         m_actors.push_back(new OilSlick(this, randInt(LEFT_EDGE + 1, RIGHT_EDGE - 1), VIEW_HEIGHT));
     
+    int refill = randInt(0, CHANCE_OF_REFILL_BASE + CHANCE_OF_REFILL_MULTIPLIER*getLevel() - 1);
+    if (refill == 0)
+        m_actors.push_back(new HolyWaterGoodie(this, randInt(LEFT_EDGE + 1, RIGHT_EDGE - 1), VIEW_HEIGHT));
     
     addBorders();
     

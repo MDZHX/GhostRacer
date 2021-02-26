@@ -265,6 +265,35 @@ void HealingGoodie::doActivity(Racer* gr)
     gr->addHP(HP_HEAL);
 }
 
+// HolyWaterGoodie
+
+HolyWaterGoodie::HolyWaterGoodie(StudentWorld* sw, double x, double y)
+ : GhostRacerActivatedObject(sw, IID_HOLY_WATER_GOODIE, x, y, SIZE_REFILL, up)
+{
+}
+
+void HolyWaterGoodie::doSomething()
+{
+    if (!moveRelative(0))
+        die();
+    else
+    {
+        if (getWorld()->getOverlappingGhostRacer(this) != nullptr)
+        {
+            doActivity(getWorld()->getRacer());
+            if (selfDestructs())
+                die();
+            getWorld()->playSound(getSound());
+            getWorld()->increaseScore(getScoreIncrease());
+        }
+    }
+}
+
+void HolyWaterGoodie::doActivity(Racer* gr)
+{
+    gr->addSprays(REFILL);
+}
+
 // SoulGoodie
 
 SoulGoodie::SoulGoodie(StudentWorld* sw, double x, double y)
@@ -280,7 +309,7 @@ void SoulGoodie::doSomething()
     {
         if (getWorld()->getOverlappingGhostRacer(this) != nullptr)
         {
-            doActivity(nullptr);
+            doActivity(getWorld()->getRacer());
             if (selfDestructs())
                 die();
             getWorld()->playSound(getSound());
