@@ -13,7 +13,8 @@ Actor::Actor(StudentWorld* world, int imageID, double x, double y, double size, 
 
 bool Actor::moveRelative(double dx)
 {
-    moveTo(getX() + dx, getY() + getWorld()->calcVspeed(this));
+    double dy = getVspeed() - getWorld()->getRacer()->getVspeed();
+    moveTo(getX() + dx, getY() + dy);
     int curX = getX();
     int curY = getY();
     return curX >= 0 && curY >= 0 && curX <= VIEW_WIDTH && curY <= VIEW_HEIGHT;
@@ -42,6 +43,13 @@ int BorderLine::getIID(bool isYellow) {
 Agent::Agent(StudentWorld* sw, int imageID, double x, double y, double size, int dir, int hp)
 : Actor(sw, imageID, x, y, size, dir, DEPTH_AGENT), m_hp(hp), m_maxhp(hp)
 {
+}
+
+void Agent::addHP(int hp)
+{
+    m_hp += hp;
+    if (m_hp > m_maxhp)
+        m_hp = m_maxhp;
 }
 
 bool Agent::takeDamageAndPossiblyDie(int hp)
@@ -133,7 +141,18 @@ void Racer::doSomething()
 
 void Racer::spin()
 {
+    int delta = randInt(RACER_SPIN_MIN, RACER_SPIN_MAX);
+    int negative = randInt(0, 1);
+    if (negative == 0)
+        delta *= -1;
     
+    int dir = getDirection() + delta;
+    if (dir < 60)
+        dir = 60;
+    else if (dir > 120)
+        dir = 120;
+    
+    setDirection(dir);
 }
 
 Spray::Spray(StudentWorld* sw, double x, double y, int dir)
@@ -212,4 +231,31 @@ void SoulGoodie::doSomething()
 void SoulGoodie::doActivity(Racer* gr)
 {
     getWorld()->recordSoulSaved();
+}
+
+OilSlick::OilSlick(StudentWorld* sw, double x, double y)
+ : GhostRacerActivatedObject(sw, IID_OIL_SLICK, x, y, randInt(SIZE_OIL_LOWER, SIZE_OIL_UPPER), right)
+{
+}
+
+void OilSlick::doSomething()
+{
+    if (!moveRelative(0))
+        die();
+    else
+    {
+        if (getWorld()->getOverlappingGhostRacer(this) != nullptr)
+        {
+            doActivity(getWorld()->getRacer());
+            if (selfDestructs())
+                die();
+            getWorld()->playSound(getSound());
+            getWorld()->increaseScore(getScoreIncrease());
+        }
+    }
+}
+
+void OilSlick::doActivity(Racer* gr)
+{
+    gr->spin();
 }

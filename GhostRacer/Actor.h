@@ -9,6 +9,8 @@ const double SIZE_RACER = 4.0;
 const double SIZE_BORDER = 2.0;
 const double SIZE_SPRAY = 1.0;
 const double SIZE_SOUL = 4.0;
+const int SIZE_OIL_LOWER = 2;
+const int SIZE_OIL_UPPER = 5;
 
 const int DEPTH_AGENT = 0;
 const int DEPTH_BORDER = 2;
@@ -23,11 +25,16 @@ const int SPRAY_MAX_DISTANCE = 160;
 
 const int HP_RACER = 100;
 
+const int DAMAGE_CRASH = 10;
+
 const int VSPEED_BORDER = -4;
 const int VSPEED_RACER = 0;
 const int VSPEED_ACTIVATED_OBJECT = -4;
 
 const int RACER_SPRAYS = 10;
+
+const int RACER_SPIN_MIN = 5;
+const int RACER_SPIN_MAX = 20;
 
 const int RACER_DIR_LEFT_LIM = 114;
 const int RACER_DIR_RIGHT_LIM = 66;
@@ -39,11 +46,6 @@ const int RACER_SPEED_MAX = 5;
 const int RACER_SPEED_MIN = -1;
 const int RACER_SPEED_DELTA = 1;
 const double RACER_MAX_SHIFT_PER_TICK = 4.0;
-
-const int DAMAGE_CRASH = 10;
-
-
-
 
 const double PI = 4 * atan(1.0);
 
@@ -121,12 +123,7 @@ protected:
         return true;
     }
     
-    void addHP(int hp)
-    {
-        m_hp += hp;
-        if (m_hp > m_maxhp)
-            m_hp = m_maxhp;
-    }
+    void addHP(int hp);
 
     virtual bool takeDamageAndPossiblyDie(int hp);
 
@@ -155,6 +152,8 @@ public:
     {
         return m_sprays;
     }
+    
+    void spin();
 private:
     virtual int soundWhenDie() const
     {
@@ -165,8 +164,6 @@ private:
     {
         m_sprays += amt;
     }
-
-    void spin();
 private:
     int m_sprays;
 };
@@ -223,6 +220,36 @@ protected:
     virtual bool selfDestructs() const
     {
         return true;
+    }
+    
+    virtual bool isSprayable() const
+    {
+        return false;
+    }
+};
+
+class OilSlick : public GhostRacerActivatedObject
+{
+public:
+    OilSlick(StudentWorld* sw, double x, double y);
+    
+    virtual void doSomething();
+protected:
+    virtual void doActivity(Racer* gr);
+    
+    virtual int getScoreIncrease() const
+    {
+        return 0;
+    }
+    
+    virtual int getSound() const
+    {
+        return SOUND_OIL_SLICK;
+    }
+    
+    virtual bool selfDestructs() const
+    {
+        return false;
     }
     
     virtual bool isSprayable() const

@@ -18,10 +18,13 @@ const int HEIGHT_WHITE_BORDER = 4 * SPRITE_HEIGHT;
 
 const int MAX_BONUS = 5000;
 
-const double OVERLAP_FACTOR_X = 0.25;
-const double OVERLAP_FACTOR_Y = 0.6;
+const double OVERLAP_MULTIPLIER_X = 0.25;
+const double OVERLAP_MULTIPLIER_Y = 0.6;
 
 const int CHANCE_OF_LOST_SOUL = 100;
+const int CHANCE_OF_OIL_MAX = 150;
+const int CHANCE_OF_OIL_MULTIPLIER = 10;
+const int CHANCE_OF_OIL_MIN = 40;
 
 class StudentWorld : public GameWorld
 {
@@ -32,6 +35,11 @@ public:
     virtual int move();
     virtual void cleanUp();
     
+    Racer* getRacer()
+    {
+        return m_racer;
+    }
+    
     void addActor(Actor* a);
     
     Racer* getOverlappingGhostRacer(Actor* a) const;
@@ -39,8 +47,6 @@ public:
     bool sprayFirstAppropriateActor(Actor* a);
     
     void recordSoulSaved();
-    
-    double calcVspeed(const Actor* actor) const;
 private:
     Racer* m_racer;
     std::list<Actor*> m_actors;

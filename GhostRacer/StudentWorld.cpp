@@ -61,6 +61,11 @@ int StudentWorld::move()
     if (soul == 0)
         m_actors.push_back(new SoulGoodie(this, randInt(LEFT_EDGE + 1, RIGHT_EDGE - 1), VIEW_HEIGHT));
     
+    int oilSlick = randInt(0, max(CHANCE_OF_OIL_MAX - getLevel() * CHANCE_OF_OIL_MULTIPLIER, CHANCE_OF_OIL_MIN) - 1);
+    if (oilSlick == 0)
+        m_actors.push_back(new OilSlick(this, randInt(LEFT_EDGE + 1, RIGHT_EDGE - 1), VIEW_HEIGHT));
+    
+    
     addBorders();
     
     return updateGameStatAndReturn(GWSTATUS_CONTINUE_GAME);
@@ -109,17 +114,12 @@ void StudentWorld::recordSoulSaved()
         m_souls2save--;
 }
 
-double StudentWorld::calcVspeed(const Actor *actor) const
-{
-    return actor->getVspeed() - m_racer->getVspeed();
-}
-
 bool StudentWorld::overlaps(const Actor* a1, const Actor* a2) const
 {
     double delta_x = abs(a1->getX() - a2->getX());
     double delta_y = abs(a1->getY() - a2->getY());
     double radius_sum = a1->getRadius() + a2->getRadius();
-    return delta_x < radius_sum * OVERLAP_FACTOR_X && delta_y < radius_sum * OVERLAP_FACTOR_Y;
+    return delta_x < radius_sum * OVERLAP_MULTIPLIER_X && delta_y < radius_sum * OVERLAP_MULTIPLIER_Y;
 }
 
 int StudentWorld::calcSouls2Save() const
