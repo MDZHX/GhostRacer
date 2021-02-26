@@ -5,12 +5,13 @@
 
 class StudentWorld;
 
-const double SIZE_RACER = 4.0;
 const double SIZE_BORDER = 2.0;
+const double SIZE_RACER = 4.0;
 const double SIZE_SPRAY = 1.0;
-const double SIZE_SOUL = 4.0;
 const int SIZE_OIL_LOWER = 2;
 const int SIZE_OIL_UPPER = 5;
+const double SIZE_HEALING = 1.0;
+const double SIZE_SOUL = 4.0;
 
 const int DEPTH_AGENT = 0;
 const int DEPTH_BORDER = 2;
@@ -18,12 +19,14 @@ const int DEPTH_SPRAY = 1;
 const int DEPTH_ACTIVATED_OBJECT = 2;
 
 const int SCORE_SOUL = 100;
+const int SCORE_HEALING = 250;
 
 const int SOUL_ROTATION_DELTA = 10;
 
 const int SPRAY_MAX_DISTANCE = 160;
 
 const int HP_RACER = 100;
+const int HP_HEAL = 10;
 
 const int DAMAGE_CRASH = 10;
 
@@ -117,13 +120,13 @@ public:
     {
         return m_hp;
     }
+    
+    void addHP(int hp);
 protected:
     virtual bool isCollisionAvoidanceWorthy() const
     {
         return true;
     }
-    
-    void addHP(int hp);
 
     virtual bool takeDamageAndPossiblyDie(int hp);
 
@@ -198,6 +201,60 @@ protected:
     virtual bool isSprayable() const = 0;
 };
 
+class OilSlick : public GhostRacerActivatedObject
+{
+public:
+    OilSlick(StudentWorld* sw, double x, double y);
+    
+    virtual void doSomething();
+protected:
+    virtual void doActivity(Racer* gr);
+    
+    virtual int getScoreIncrease() const
+    {
+        return 0;
+    }
+    
+    virtual int getSound() const
+    {
+        return SOUND_OIL_SLICK;
+    }
+    
+    virtual bool selfDestructs() const
+    {
+        return false;
+    }
+    
+    virtual bool isSprayable() const
+    {
+        return false;
+    }
+};
+
+class HealingGoodie : public GhostRacerActivatedObject
+{
+public:
+    HealingGoodie(StudentWorld* sw, double x, double y);
+    virtual void doSomething();
+protected:
+    virtual void doActivity(Racer* gr);
+    
+    virtual int getScoreIncrease() const
+    {
+        return SCORE_HEALING;
+    }
+    
+    virtual bool selfDestructs() const
+    {
+        return true;
+    }
+    
+    virtual bool isSprayable() const
+    {
+        return true;
+    }
+};
+
 class SoulGoodie : public GhostRacerActivatedObject
 {
 public:
@@ -228,34 +285,5 @@ protected:
     }
 };
 
-class OilSlick : public GhostRacerActivatedObject
-{
-public:
-    OilSlick(StudentWorld* sw, double x, double y);
-    
-    virtual void doSomething();
-protected:
-    virtual void doActivity(Racer* gr);
-    
-    virtual int getScoreIncrease() const
-    {
-        return 0;
-    }
-    
-    virtual int getSound() const
-    {
-        return SOUND_OIL_SLICK;
-    }
-    
-    virtual bool selfDestructs() const
-    {
-        return false;
-    }
-    
-    virtual bool isSprayable() const
-    {
-        return false;
-    }
-};
 
 #endif // ACTOR_H_

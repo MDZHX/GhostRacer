@@ -155,6 +155,8 @@ void Racer::spin()
     setDirection(dir);
 }
 
+// Spray
+
 Spray::Spray(StudentWorld* sw, double x, double y, int dir)
  : Actor(sw, IID_HOLY_WATER_PROJECTILE, x, y, SIZE_SPRAY, dir, DEPTH_SPRAY), m_distance(SPRAY_MAX_DISTANCE)
 {
@@ -189,6 +191,8 @@ void Spray::doSomething()
 
 }
 
+// GhostRacerActivatedObject
+
 GhostRacerActivatedObject::GhostRacerActivatedObject(StudentWorld* sw, int imageID, double x, double y, double size, int dir)
  : Actor(sw, imageID, x, y, size, dir, DEPTH_ACTIVATED_OBJECT)
 {
@@ -204,6 +208,64 @@ bool GhostRacerActivatedObject::beSprayedIfAppropriate()
     }
     return false;
 }
+
+// OilSlick
+
+OilSlick::OilSlick(StudentWorld* sw, double x, double y)
+ : GhostRacerActivatedObject(sw, IID_OIL_SLICK, x, y, randInt(SIZE_OIL_LOWER, SIZE_OIL_UPPER), right)
+{
+}
+
+void OilSlick::doSomething()
+{
+    if (!moveRelative(0))
+        die();
+    else
+    {
+        if (getWorld()->getOverlappingGhostRacer(this) != nullptr)
+        {
+            doActivity(getWorld()->getRacer());
+            if (selfDestructs())
+                die();
+            getWorld()->playSound(getSound());
+            getWorld()->increaseScore(getScoreIncrease());
+        }
+    }
+}
+
+void OilSlick::doActivity(Racer* gr)
+{
+    gr->spin();
+}
+
+HealingGoodie::HealingGoodie(StudentWorld* sw, double x, double y)
+ : GhostRacerActivatedObject(sw, IID_HEAL_GOODIE, x, y, SIZE_HEALING, right)
+{
+}
+
+void HealingGoodie::doSomething()
+{
+    if (!moveRelative(0))
+        die();
+    else
+    {
+        if (getWorld()->getOverlappingGhostRacer(this) != nullptr)
+        {
+            doActivity(getWorld()->getRacer());
+            if (selfDestructs())
+                die();
+            getWorld()->playSound(getSound());
+            getWorld()->increaseScore(getScoreIncrease());
+        }
+    }
+}
+
+void HealingGoodie::doActivity(Racer* gr)
+{
+    gr->addHP(HP_HEAL);
+}
+
+// SoulGoodie
 
 SoulGoodie::SoulGoodie(StudentWorld* sw, double x, double y)
  : GhostRacerActivatedObject(sw, IID_SOUL_GOODIE, x, y, SIZE_SOUL, right)
@@ -231,31 +293,4 @@ void SoulGoodie::doSomething()
 void SoulGoodie::doActivity(Racer* gr)
 {
     getWorld()->recordSoulSaved();
-}
-
-OilSlick::OilSlick(StudentWorld* sw, double x, double y)
- : GhostRacerActivatedObject(sw, IID_OIL_SLICK, x, y, randInt(SIZE_OIL_LOWER, SIZE_OIL_UPPER), right)
-{
-}
-
-void OilSlick::doSomething()
-{
-    if (!moveRelative(0))
-        die();
-    else
-    {
-        if (getWorld()->getOverlappingGhostRacer(this) != nullptr)
-        {
-            doActivity(getWorld()->getRacer());
-            if (selfDestructs())
-                die();
-            getWorld()->playSound(getSound());
-            getWorld()->increaseScore(getScoreIncrease());
-        }
-    }
-}
-
-void OilSlick::doActivity(Racer* gr)
-{
-    gr->spin();
 }
