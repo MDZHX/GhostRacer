@@ -79,11 +79,28 @@ void StudentWorld::cleanUp()
     m_actors.clear();
 }
 
-Racer* StudentWorld::getOverlappingGhostRacer(const Actor* a) const
+void StudentWorld::addActor(Actor* a)
+{
+    m_actors.push_back(a);
+}
+
+Racer* StudentWorld::getOverlappingGhostRacer(Actor* a) const
 {
     if (overlaps(m_racer, a))
         return m_racer;
     return nullptr;
+}
+
+bool StudentWorld::sprayFirstAppropriateActor(Actor* a)
+{
+    for (list<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); it++)
+    {
+        if ((*it)->alive() && overlaps(a, *it) && (*it)->beSprayedIfAppropriate())
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 void StudentWorld::recordSoulSaved()

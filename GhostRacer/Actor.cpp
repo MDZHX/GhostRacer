@@ -2,6 +2,8 @@
 #include "StudentWorld.h"
 #include <cmath>
 
+using namespace std;
+
 // Actor
 
 Actor::Actor(StudentWorld* world, int imageID, double x, double y, double size, int dir, int depth)
@@ -38,7 +40,7 @@ int BorderLine::getIID(bool isYellow) {
 // Agent
 
 Agent::Agent(StudentWorld* sw, int imageID, double x, double y, double size, int dir, int hp)
-: Actor(sw, imageID, x, y, size, dir, DEPTH_AGENT), m_hp(hp)
+: Actor(sw, imageID, x, y, size, dir, DEPTH_AGENT), m_hp(hp), m_maxhp(hp)
 {
 }
 
@@ -47,6 +49,7 @@ bool Agent::takeDamageAndPossiblyDie(int hp)
     m_hp -= hp;
     if (m_hp <= 0)
     {
+        m_hp = 0;
         die();
         getWorld()->playSound(soundWhenDie());
         return true;
@@ -87,6 +90,14 @@ void Racer::doSomething()
             switch (ch)
             {
                 case KEY_PRESS_SPACE:
+                    if (m_sprays > 0)
+                    {
+                        double spray_x = getX() + SPRITE_HEIGHT * cos(getDirection()*1.0 / 360 * 2 * PI);
+                        double spray_y = getY() + SPRITE_HEIGHT * sin(getDirection()*1.0 / 360 * 2 * PI);
+                        getWorld()->addActor(new Spray(getWorld(), spray_x, spray_y, getDirection()));
+                        getWorld()->playSound(SOUND_PLAYER_SPRAY);
+                        m_sprays--;
+                    }
                     break;
                 case KEY_PRESS_LEFT:
                     if (getDirection() < RACER_DIR_LEFT_LIM)
@@ -117,7 +128,7 @@ void Racer::doSomething()
         }
     }
           
-    moveRelative(cos(getDirection()*1.0 / 360 * 2 * PI) * RACER_MAX_SHIFT_PER_TICK);
+    moveRelative(RACER_MAX_SHIFT_PER_TICK* cos(getDirection()*1.0 / 360 * 2 * PI) );
 }
 
 void Racer::spin()
@@ -125,6 +136,39 @@ void Racer::spin()
     
 }
 
+Spray::Spray(StudentWorld* sw, double x, double y, int dir)
+ : Actor(sw, IID_HOLY_WATER_PROJECTILE, x, y, SIZE_SPRAY, dir, DEPTH_SPRAY), m_distance(SPRAY_MAX_DISTANCE)
+{
+}
+
+void Spray::doSomething()
+{
+    if (!alive())
+        return;
+    
+    if (getWorld()->sprayFirstAppropriateActor(this))
+    {
+        die();
+        return;
+    }
+    
+    moveForward(SPRITE_HEIGHT);
+    m_distance -= SPRITE_HEIGHT;
+
+    int curX = getX();
+    int curY = getY();
+    if (!(curX >= 0 && curY >= 0 && curX <= VIEW_WIDTH && curY <= VIEW_HEIGHT))
+    {
+        die();
+        return;
+    }
+    
+    if (m_distance <= 0)
+    {
+        die();
+    }
+
+}
 
 GhostRacerActivatedObject::GhostRacerActivatedObject(StudentWorld* sw, int imageID, double x, double y, double size, int dir)
  : Actor(sw, imageID, x, y, size, dir, DEPTH_ACTIVATED_OBJECT)

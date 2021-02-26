@@ -32,7 +32,12 @@ public:
     virtual int move();
     virtual void cleanUp();
     
-    Racer* getOverlappingGhostRacer(const Actor* a) const;
+    void addActor(Actor* a);
+    
+    Racer* getOverlappingGhostRacer(Actor* a) const;
+    
+    bool sprayFirstAppropriateActor(Actor* a);
+    
     void recordSoulSaved();
     
     double calcVspeed(const Actor* actor) const;

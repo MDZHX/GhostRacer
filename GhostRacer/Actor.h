@@ -7,15 +7,19 @@ class StudentWorld;
 
 const double SIZE_RACER = 4.0;
 const double SIZE_BORDER = 2.0;
+const double SIZE_SPRAY = 1.0;
 const double SIZE_SOUL = 4.0;
 
 const int DEPTH_AGENT = 0;
 const int DEPTH_BORDER = 2;
+const int DEPTH_SPRAY = 1;
 const int DEPTH_ACTIVATED_OBJECT = 2;
 
 const int SCORE_SOUL = 100;
 
 const int SOUL_ROTATION_DELTA = 10;
+
+const int SPRAY_MAX_DISTANCE = 160;
 
 const int HP_RACER = 100;
 
@@ -59,6 +63,11 @@ public:
     {
         return m_vspeed;
     }
+    
+    virtual bool beSprayedIfAppropriate()
+    {
+        return false;
+    }
 protected:
     StudentWorld* getWorld() const
     {
@@ -73,11 +82,6 @@ protected:
     void setVspeed(double vspeed)
     {
         m_vspeed = vspeed;
-    }
-    
-    virtual bool beSprayedIfAppropriate()
-    {
-        return false;
     }
 
     virtual bool isCollisionAvoidanceWorthy() const
@@ -120,6 +124,8 @@ protected:
     void addHP(int hp)
     {
         m_hp += hp;
+        if (m_hp > m_maxhp)
+            m_hp = m_maxhp;
     }
 
     virtual bool takeDamageAndPossiblyDie(int hp);
@@ -135,6 +141,7 @@ protected:
     }
 private:
     int m_hp;
+    int m_maxhp;
 };
 
 class Racer : public Agent
@@ -164,13 +171,22 @@ private:
     int m_sprays;
 };
 
+class Spray : public Actor
+{
+public:
+    Spray(StudentWorld* sw, double x, double y, int dir);
+    virtual void doSomething();
+private:
+    int m_distance;
+};
+
 class GhostRacerActivatedObject : public Actor
 {
 public:
     GhostRacerActivatedObject(StudentWorld* sw, int imageID, double x, double y, double size, int dir);
-protected:
+    
     virtual bool beSprayedIfAppropriate();
-
+protected:
     virtual void doActivity(Racer* gr) = 0;
 
     virtual int getScoreIncrease() const = 0;
