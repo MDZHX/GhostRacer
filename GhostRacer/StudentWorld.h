@@ -72,8 +72,6 @@ public:
     bool sprayFirstAppropriateActor(Actor* a);
     
     void recordSoulSaved();
-    
-    double calcVspeed(Actor* a) const;
 private:
     Racer* m_racer;
     std::list<Actor*> m_actors;

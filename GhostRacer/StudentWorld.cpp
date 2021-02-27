@@ -165,8 +165,7 @@ void StudentWorld::determineCabPosAndPlan()
     
     if (addCab)
     {
-        Actor* cab = new ZombieCab(this, getLaneCenter(cur_lane), startY);
-        cab->setVspeed(startVspeed);
+        Actor* cab = new ZombieCab(this, getLaneCenter(cur_lane), startY, startVspeed);
         m_actors.push_back(cab);
     }
 }
@@ -212,11 +211,6 @@ void StudentWorld::recordSoulSaved()
 {
     if (m_souls2save > 0)
         m_souls2save--;
-}
-
-double StudentWorld::calcVspeed(Actor* a) const
-{
-    return a->getVspeed() - m_racer->getVspeed();
 }
 
 bool StudentWorld::overlaps(const Actor* a1, const Actor* a2) const

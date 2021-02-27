@@ -81,53 +81,73 @@ const int CHANCE_DROP = 5;
 const int ZOMBIE_RANGE = 30;
 const int ZOMBIE_TICKS = 20;
 
+const int ZOMBIE_CAB_HIT_HSPEED_LEFT = -5;
+const int ZOMBIE_CAB_HIT_DIR_LEFT = 120;
+const int ZOMBIE_CAB_HIT_HSPEED_RIGHT = 5;
+const int ZOMBIE_CAB_HIT_DIR_RIGHT = 60;
+const int ZOMBIE_CAB_HIT_DIR_RAND = 20;
 const double ZOMBIE_CAB_VSPEED_DELTA = 0.5;
 const int ZOMBIE_CAB_PLAN_SPEED_LOWER = -2;
 const int ZOMBIE_CAB_PLAN_SPEED_UPPER = 2;
 
 const double PI = 4 * atan(1.0);
 
+// Base class for all actors
 class Actor: public GraphObject
 {
 public:
     Actor(StudentWorld* world, int imageID, double x, double y, double size, int dir, int depth);
     
+    // Is this actor dead?
     bool alive() const
     {
         return m_alive;
     }
-        
+    
+    // Mark this actor as dead.
     void die()
     {
         m_alive = false;
     }
     
+    // Get this actor's vertical speed.
     double getVspeed() const
     {
         return m_vspeed;
     }
     
-    void setVspeed(double vspeed)
-    {
-        m_vspeed = vspeed;
-    }
-
-    StudentWorld* getWorld() const
-    {
-        return m_world;
-    }
-    
+    // Action to perform for each tick.
     virtual void doSomething() = 0;
-    virtual bool moveRelative(double dx);
     
+    // Does this object affect zombie cab placement and speed?
     virtual bool isCollisionAvoidanceWorthy() const
     {
         return false;
     }
     
+    // If this actor is affected by holy water projectiles, then inflict that
+    // effect on it and return true; otherwise, return false.
     virtual bool beSprayedIfAppropriate()
     {
         return false;
+    }
+protected:
+    // Adjust the x coordinate by dx to move to a position with a y coordinate
+    // determined by this actor's vertical speed relative to GhostRacser's
+    // vertical speed.  Return true if the new position is within the view;
+    // otherwise, return false, with the actor dead.
+    bool moveRelative(double dx);
+    
+    // Get this actor's world
+    StudentWorld* getWorld() const
+    {
+        return m_world;
+    }
+    
+    // Set this actor's vertical speed.
+    void setVspeed(double vspeed)
+    {
+        m_vspeed = vspeed;
     }
 private:
     StudentWorld* m_world;
@@ -135,34 +155,57 @@ private:
     double m_vspeed;
 };
 
+// Class for yellow and white borders
 class BorderLine: public Actor
 {
 public:
     BorderLine(StudentWorld* world, double x, double y, bool isYellow);
     
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
     virtual void doSomething();
 private:
+    // Return the corrected image ID, called in constructor
     int getIID(bool isYellow);
 };
 
+// Class for Racer, Human/Zombie Pedestrians, and Zombie Cab
 class Agent : public Actor
 {
 public:
     Agent(StudentWorld* sw, int imageID, double x, double y, double size, int dir, int hp);
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
+    
+    virtual bool isCollisionAvoidanceWorthy() const
+    {
+        return true;
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //  New Virtual Functions
+    ///////////////////////////////////////////////////////////////////////////
+
+    virtual bool takeDamageAndPossiblyDie(int hp);
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //  New Non-Virtual Functions
+    ///////////////////////////////////////////////////////////////////////////
+    
     void addHP(int hp);
     
     int getHP() const
     {
         return m_hp;
     }
+protected:
+    ///////////////////////////////////////////////////////////////////////////
+    //  New Virtual Functions
+    ///////////////////////////////////////////////////////////////////////////
     
-    virtual bool takeDamageAndPossiblyDie(int hp);
-
-    virtual bool isCollisionAvoidanceWorthy() const
-    {
-        return true;
-    }
-
     virtual int soundWhenHurt() const
     {
         return SOUND_NONE;
@@ -170,11 +213,10 @@ public:
 
     virtual int soundWhenDie() const
     {
-        return SOUND_VEHICLE_CRASH;
+        return SOUND_PLAYER_DIE;;
     }
 private:
     int m_hp;
-    int m_maxhp;
 };
 
 class Racer : public Agent
@@ -194,11 +236,6 @@ public:
     }
     
     virtual void doSomething();
-
-    virtual int soundWhenDie() const
-    {
-        return SOUND_PLAYER_DIE;
-    }
 private:
     int m_sprays;
 };
@@ -206,7 +243,7 @@ private:
 class Pedestrian : public Agent
 {
 public:
-    Pedestrian(StudentWorld* sw, int imageID, double x, double y, double size);
+    Pedestrian(StudentWorld* sw, int imageID, double x, double y, double size, int dir, int hp);
     void moveAndPossiblyPickPlan();
     
     int getHspeed() const
@@ -219,6 +256,28 @@ public:
         m_hspeed = s;
     }
     
+    virtual bool hitRacerAndPossiblyReturn() = 0;
+    
+    virtual void doSomething();
+    virtual bool beSprayedIfAppropriate();
+    virtual void pickSpeedAndDir();
+
+    virtual void possiblyAttack() {}
+    virtual void dropGoodie() {}
+    
+
+    
+    virtual int getScore()
+    {
+        return 0;
+    }
+    
+    virtual bool possiblyAdjustSpeedAndReturn()
+    {
+        return false;
+    }
+    
+protected:
     virtual int soundWhenHurt() const
     {
         return SOUND_PED_HURT;
@@ -238,9 +297,8 @@ class HumanPedestrian : public Pedestrian
 public:
     HumanPedestrian(StudentWorld* sw, double x, double y);
     
-    virtual void doSomething();
-    virtual bool beSprayedIfAppropriate();
     virtual bool takeDamageAndPossiblyDie(int hp);
+    virtual bool hitRacerAndPossiblyReturn();
 };
 
 class ZombiePedestrian : public Pedestrian
@@ -248,23 +306,44 @@ class ZombiePedestrian : public Pedestrian
 public:
     ZombiePedestrian(StudentWorld* sw, double x, double y);
     
-    virtual void doSomething();
-    virtual bool beSprayedIfAppropriate();
+    virtual bool hitRacerAndPossiblyReturn();
+    virtual void possiblyAttack();
+    virtual void dropGoodie();
+    
+    virtual int getScore()
+    {
+        return SCORE_ZOMBIE;
+    }
 private:
     int m_ticks;
 };
 
-class ZombieCab : public Agent
+class ZombieCab : public Pedestrian
 {
 public:
-    ZombieCab(StudentWorld* sw, double x, double y);
+    ZombieCab(StudentWorld* sw, double x, double y, double vspeed);
     
-    virtual void doSomething();
-    virtual bool beSprayedIfAppropriate();
+    virtual bool hitRacerAndPossiblyReturn();
+    virtual void pickSpeedAndDir();
+    virtual bool possiblyAdjustSpeedAndReturn();
+    virtual void dropGoodie();
+    
+    virtual int getScore()
+    {
+        return SCORE_VEHICLE;
+    }
+protected:
+    virtual int soundWhenHurt() const
+    {
+        return SOUND_NONE;
+    }
+    
+    virtual int soundWhenDie() const
+    {
+        return SOUND_VEHICLE_DIE;
+    }
 private:
-    int m_plan;
     bool m_damaged;
-    int m_hspeed;
 };
 
 class Spray : public Actor
@@ -282,11 +361,13 @@ class GhostRacerActivatedObject : public Actor
 public:
     GhostRacerActivatedObject(StudentWorld* sw, int imageID, double x, double y, double size, int dir);
     
+    virtual void doSomething();
     virtual bool beSprayedIfAppropriate();
     virtual bool isSprayable() const = 0;
     virtual bool selfDestructs() const = 0;
     virtual int getScoreIncrease() const = 0;
     virtual void doActivity(Racer* gr) = 0;
+    virtual void possiblyRotate() {};
 
     virtual int getSound() const
     {
@@ -299,7 +380,6 @@ class OilSlick : public GhostRacerActivatedObject
 public:
     OilSlick(StudentWorld* sw, double x, double y);
     
-    virtual void doSomething();
     virtual void doActivity(Racer* gr);
     
     virtual bool isSprayable() const
@@ -328,7 +408,6 @@ class HealingGoodie : public GhostRacerActivatedObject
 public:
     HealingGoodie(StudentWorld* sw, double x, double y);
     
-    virtual void doSomething();
     virtual void doActivity(Racer* gr);
     
     virtual bool isSprayable() const
@@ -352,7 +431,6 @@ class HolyWaterGoodie : public GhostRacerActivatedObject
 public:
     HolyWaterGoodie(StudentWorld* sw, double x, double y);
     
-    virtual void doSomething();
     virtual void doActivity(Racer* gr);
     
     virtual bool isSprayable() const
@@ -376,8 +454,9 @@ class SoulGoodie : public GhostRacerActivatedObject
 public:
     SoulGoodie(StudentWorld* sw, double x, double y);
     
-    virtual void doSomething();
     virtual void doActivity(Racer* gr);
+    
+    virtual void possiblyRotate();
     
     virtual bool isSprayable() const
     {
