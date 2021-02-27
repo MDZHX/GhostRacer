@@ -13,7 +13,7 @@ Actor::Actor(StudentWorld* world, int imageID, double x, double y, double size, 
 
 bool Actor::moveRelative(double dx)
 {
-    double dy = getVspeed() - getWorld()->getRacer()->getVspeed();
+    double dy = getWorld()->calcVspeed(this);
     moveTo(getX() + dx, getY() + dy);
     int curX = getX();
     int curY = getY();
@@ -62,6 +62,7 @@ bool Agent::takeDamageAndPossiblyDie(int hp)
         getWorld()->playSound(soundWhenDie());
         return true;
     }
+    getWorld()->playSound(soundWhenHurt());
     return false;
 }
 
@@ -147,12 +148,217 @@ void Racer::spin()
         delta *= -1;
     
     int dir = getDirection() + delta;
-    if (dir < 60)
-        dir = 60;
-    else if (dir > 120)
-        dir = 120;
+    if (dir < RACER_SPIN_RIGHT_LIM)
+        dir = RACER_SPIN_RIGHT_LIM;
+    else if (dir > RACER_SPIN_LEFT_LIM)
+        dir = RACER_SPIN_LEFT_LIM;
     
     setDirection(dir);
+}
+
+// Pedestrian
+
+Pedestrian::Pedestrian(StudentWorld* sw, int imageID, double x, double y, double size)
+ : Agent(sw, imageID, x, y, size, right, HP_PED), m_hspeed(HSPEED_PED), m_plan(PLAN_PED)
+{
+    setVspeed(VSPEED_PED);
+}
+
+void Pedestrian::moveAndPossiblyPickPlan()
+{
+    if (!moveRelative(getHspeed()))
+    {
+        die();
+        return;
+    }
+    
+    m_plan--;
+    if (m_plan <= 0)
+    {
+        m_hspeed = randInt(HSPEED_PED_LOWER,HSPEED_PED_UPPER);
+        while (m_hspeed == 0)
+            m_hspeed = randInt(HSPEED_PED_LOWER,HSPEED_PED_UPPER);
+        
+        m_plan = randInt(PLAN_PED_LOWER, PLAN_PED_UPPER);
+        
+        if (m_hspeed < 0)
+            setDirection(left);
+        else
+            setDirection(right);
+    }
+}
+
+// HumanPedestrian
+
+HumanPedestrian::HumanPedestrian(StudentWorld* sw, double x, double y)
+ : Pedestrian(sw, IID_HUMAN_PED, x, y, SIZE_HUMAN)
+{
+}
+
+void HumanPedestrian::doSomething()
+{
+    if (!alive())
+        return;
+    
+    if (getWorld()->getOverlappingGhostRacer(this) != nullptr)
+    {
+        getWorld()->getRacer()->die();
+        return;
+    }
+    
+    moveAndPossiblyPickPlan();
+}
+
+bool HumanPedestrian::beSprayedIfAppropriate()
+{
+    takeDamageAndPossiblyDie(0);
+    return true;
+}
+
+bool HumanPedestrian::takeDamageAndPossiblyDie(int hp)
+{
+    setHspeed(getHspeed() * -1);
+    
+    setDirection((getDirection() + 180) % 360);
+    
+    getWorld()->playSound(soundWhenHurt());
+    
+    return false;
+}
+
+// ZombiePedestrian
+
+ZombiePedestrian::ZombiePedestrian(StudentWorld* sw, double x, double y)
+ : Pedestrian(sw, IID_ZOMBIE_PED, x, y, SIZE_ZOMBIE), m_ticks(0)
+{
+}
+
+void ZombiePedestrian::doSomething()
+{
+    if (!alive())
+        return;
+    
+    if (getWorld()->getOverlappingGhostRacer(this) != nullptr)
+    {
+        getWorld()->getRacer()->takeDamageAndPossiblyDie(DAMAGE_HIT_ZOMBIE);
+        takeDamageAndPossiblyDie(DAMAGE_HIT_RACER);
+        getWorld()->increaseScore(SCORE_ZOMBIE);
+    }
+    else
+    {
+        double racerX = getWorld()->getRacer()->getX();
+        double racerY = getWorld()->getRacer()->getY();
+        if (abs(getX() - racerX) < ZOMBIE_RANGE && getY() > racerY)
+        {
+            setDirection(down);
+            if (getX() < racerX)
+                setHspeed(1);
+            else if (getX() > racerX)
+                setHspeed(-1);
+            else
+                setHspeed(0);
+            m_ticks--;
+            
+            if (m_ticks <= 0)
+            {
+                getWorld()->playSound(SOUND_ZOMBIE_ATTACK);
+                m_ticks = ZOMBIE_TICKS;
+            }
+        }
+        moveAndPossiblyPickPlan();
+    }
+}
+
+bool ZombiePedestrian::beSprayedIfAppropriate()
+{
+    if (takeDamageAndPossiblyDie(DAMAGE_SPRAY))
+    {
+        if (getWorld()->getOverlappingGhostRacer(this) == nullptr)
+        {
+            int chance = randInt(0, CHANCE_DROP - 1);
+            if (chance == 0)
+                getWorld()->addActor(new HealingGoodie(getWorld(), getX(), getY()));
+        }
+        getWorld()->increaseScore(SCORE_ZOMBIE);
+    }
+    return true;
+}
+
+// ZombieCab
+
+ZombieCab::ZombieCab(StudentWorld* sw, double x, double y)
+ : Agent(sw, IID_ZOMBIE_CAB, x, y, SIZE_ZOMBIE_CAB, up, HP_ZOMBIE_CAB), m_plan(0), m_damaged(false), m_hspeed(0)
+{
+}
+
+void ZombieCab::doSomething()
+{
+    if (!alive())
+        return;
+    
+    if (getWorld()->getOverlappingGhostRacer(this) != nullptr)
+    {
+        if (!m_damaged)
+        {
+            getWorld()->playSound(SOUND_VEHICLE_CRASH);
+            getWorld()->getRacer()->takeDamageAndPossiblyDie(DAMAGE_HIT_ZOMBIE_CAB);
+            if (getX() <= getWorld()->getRacer()->getX())
+            {
+                m_hspeed = -5;
+                setDirection(120 + randInt(0, 19));
+            }
+            else
+            {
+                m_hspeed = 5;
+                setDirection(60 - randInt(0, 19));
+            }
+            m_damaged = true;
+        }
+    }
+    
+    if (!moveRelative(m_hspeed))
+    {
+        die();
+        return;
+    }
+    
+    if (getVspeed() > getWorld()->getRacer()->getVspeed() && getWorld()->hasActorInFrontOfOrBehindCab(this, IN_FRONT_OF))
+    {
+        cerr << "Old Speed " << getVspeed();
+        setVspeed(getVspeed() - ZOMBIE_CAB_VSPEED_DELTA);
+        cerr << " New Speed After Lowering " << ZOMBIE_CAB_VSPEED_DELTA << " is " << getVspeed() << endl;
+        return;
+    }
+    else if (getVspeed() <= getWorld()->getRacer()->getVspeed() && getWorld()->hasActorInFrontOfOrBehindCab(this, BEHIND))
+    {
+        cerr << "Old Speed " << getVspeed();
+        setVspeed(getVspeed() + ZOMBIE_CAB_VSPEED_DELTA);
+        cerr << " New Speed After Raising " << ZOMBIE_CAB_VSPEED_DELTA << " is " << getVspeed() << endl;
+        return;
+    }
+    
+    m_plan--;
+    
+    if (m_plan <= 0)
+    {
+        m_plan = randInt(PLAN_PED_LOWER, PLAN_PED_UPPER);
+        setVspeed(getVspeed() + randInt(ZOMBIE_CAB_PLAN_SPEED_LOWER, ZOMBIE_CAB_PLAN_SPEED_UPPER));
+    }
+}
+
+bool ZombieCab::beSprayedIfAppropriate()
+{
+    if (takeDamageAndPossiblyDie(DAMAGE_SPRAY))
+    {
+        if (getWorld()->getOverlappingGhostRacer(this) == nullptr)
+        {
+            int chance = randInt(0, CHANCE_DROP - 1);
+            if (chance == 0)
+                getWorld()->addActor(new OilSlick(getWorld(), getX(), getY()));
+        }
+        getWorld()->increaseScore(SCORE_VEHICLE);
+    }
+    return true;
 }
 
 // Spray
@@ -188,7 +394,6 @@ void Spray::doSomething()
     {
         die();
     }
-
 }
 
 // GhostRacerActivatedObject
