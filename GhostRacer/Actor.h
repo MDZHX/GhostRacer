@@ -5,6 +5,10 @@
 
 class StudentWorld;
 
+///////////////////////////////////////////////////////////////////////////
+// CONSTANTS
+///////////////////////////////////////////////////////////////////////////
+
 const double SIZE_BORDER = 2.0;
 const double SIZE_RACER = 4.0;
 const double SIZE_HUMAN = 2.0;
@@ -52,6 +56,18 @@ const int PLAN_PED = 0;
 const int PLAN_PED_LOWER = 4;
 const int PLAN_PED_UPPER = 32;
 
+const int ZOMBIE_RANGE = 30;
+const int ZOMBIE_TICKS = 20;
+
+const int ZOMBIE_CAB_HIT_HSPEED_LEFT = -5;
+const int ZOMBIE_CAB_HIT_DIR_LEFT = 120;
+const int ZOMBIE_CAB_HIT_HSPEED_RIGHT = 5;
+const int ZOMBIE_CAB_HIT_DIR_RIGHT = 60;
+const int ZOMBIE_CAB_HIT_DIR_RAND = 20;
+const double ZOMBIE_CAB_VSPEED_DELTA = 0.5;
+const int ZOMBIE_CAB_PLAN_SPEED_LOWER = -2;
+const int ZOMBIE_CAB_PLAN_SPEED_UPPER = 2;
+
 const int RACER_SPRAYS = 10;
 
 const int RACER_SPIN_MIN = 5;
@@ -77,18 +93,6 @@ const int SOUL_ROTATION_DELTA = 10;
 const int SPRAY_MAX_DISTANCE = 160;
 
 const int CHANCE_DROP = 5;
-
-const int ZOMBIE_RANGE = 30;
-const int ZOMBIE_TICKS = 20;
-
-const int ZOMBIE_CAB_HIT_HSPEED_LEFT = -5;
-const int ZOMBIE_CAB_HIT_DIR_LEFT = 120;
-const int ZOMBIE_CAB_HIT_HSPEED_RIGHT = 5;
-const int ZOMBIE_CAB_HIT_DIR_RIGHT = 60;
-const int ZOMBIE_CAB_HIT_DIR_RAND = 20;
-const double ZOMBIE_CAB_VSPEED_DELTA = 0.5;
-const int ZOMBIE_CAB_PLAN_SPEED_LOWER = -2;
-const int ZOMBIE_CAB_PLAN_SPEED_UPPER = 2;
 
 const double PI = 4 * atan(1.0);
 
