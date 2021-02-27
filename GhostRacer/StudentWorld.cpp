@@ -110,7 +110,8 @@ bool StudentWorld::hasActorInFrontOfOrBehindCab(Actor* cab, int code) const
     int lane = laneOf(cab);
     for (list<Actor*>::const_iterator it = m_actors.begin(); it != m_actors.end(); it++)
     {
-        if ((*it)->alive() &&
+        if ((*it) != cab &&
+            (*it)->alive() &&
             (*it)->isCollisionAvoidanceWorthy() &&
             laneOf(*it) == lane &&
             isInFrontOfOrBehind(*it, cab, code))
