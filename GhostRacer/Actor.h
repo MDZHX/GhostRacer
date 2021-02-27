@@ -92,7 +92,9 @@ const int ZOMBIE_CAB_PLAN_SPEED_UPPER = 2;
 
 const double PI = 4 * atan(1.0);
 
+///////////////////////////////////////////////////////////////////////////
 // Base class for all actors
+///////////////////////////////////////////////////////////////////////////
 class Actor: public GraphObject
 {
 public:
@@ -115,6 +117,10 @@ public:
     {
         return m_vspeed;
     }
+    
+    ///////////////////////////////////////////////////////////////////////////
+    // Virtual Functions
+    ///////////////////////////////////////////////////////////////////////////
     
     // Action to perform for each tick.
     virtual void doSomething() = 0;
@@ -150,12 +156,14 @@ protected:
         m_vspeed = vspeed;
     }
 private:
-    StudentWorld* m_world;
-    bool m_alive;
-    double m_vspeed;
+    StudentWorld* m_world; // the world that the actor is in
+    bool m_alive; // alive or not
+    double m_vspeed; // vertical speed
 };
 
+///////////////////////////////////////////////////////////////////////////
 // Class for yellow and white borders
+///////////////////////////////////////////////////////////////////////////
 class BorderLine: public Actor
 {
 public:
@@ -189,14 +197,18 @@ public:
     //  New Virtual Functions
     ///////////////////////////////////////////////////////////////////////////
 
+    // Do what the spec says happens when hp units of damage is inflicted.
+    // Return true if this agent dies as a result, otherwise false.
     virtual bool takeDamageAndPossiblyDie(int hp);
     
     ///////////////////////////////////////////////////////////////////////////
     //  New Non-Virtual Functions
     ///////////////////////////////////////////////////////////////////////////
     
+    // Increase hit points by hp.
     void addHP(int hp);
     
+    // Get hit points.
     int getHP() const
     {
         return m_hp;
@@ -206,78 +218,76 @@ protected:
     //  New Virtual Functions
     ///////////////////////////////////////////////////////////////////////////
     
+    // What sound should play when this agent is damaged but does not die?
     virtual int soundWhenHurt() const
     {
         return SOUND_NONE;
     }
-
+    
+    // What sound should play when this agent is damaged and dies?
     virtual int soundWhenDie() const
     {
         return SOUND_PLAYER_DIE;;
     }
 private:
-    int m_hp;
+    int m_hp; // number of hit points left
 };
 
+///////////////////////////////////////////////////////////////////////////
+// Class for Ghost Racer
+///////////////////////////////////////////////////////////////////////////
 class Racer : public Agent
 {
 public:
     Racer(StudentWorld* sw, double x, double y);
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
+    
+    virtual void doSomething();
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //  New Non-Virtual Functions
+    ///////////////////////////////////////////////////////////////////////////
+    
+    // Spin as a result of hitting an oil slick.
     void spin();
     
+    // How many holy water projectiles does the object have?
     int getSprays() const
     {
         return m_sprays;
     }
     
+    // Increase the number of holy water projectiles the object has.
     void addSprays(int amt)
     {
         m_sprays += amt;
     }
-    
-    virtual void doSomething();
 private:
-    int m_sprays;
+    int m_sprays; // number of sprays left
 };
 
+///////////////////////////////////////////////////////////////////////////
+// Class for Pedestrians and Zombie Cabs
+///////////////////////////////////////////////////////////////////////////
 class Pedestrian : public Agent
 {
 public:
     Pedestrian(StudentWorld* sw, int imageID, double x, double y, double size, int dir, int hp);
-    void moveAndPossiblyPickPlan();
     
-    int getHspeed() const
-    {
-        return m_hspeed;
-    }
-
-    void setHspeed(int s)
-    {
-        m_hspeed = s;
-    }
-    
-    virtual bool hitRacerAndPossiblyReturn() = 0;
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
     
     virtual void doSomething();
     virtual bool beSprayedIfAppropriate();
-    virtual void pickSpeedAndDir();
-
-    virtual void possiblyAttack() {}
-    virtual void dropGoodie() {}
-    
-
-    
-    virtual int getScore()
-    {
-        return 0;
-    }
-    
-    virtual bool possiblyAdjustSpeedAndReturn()
-    {
-        return false;
-    }
-    
 protected:
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
+    
     virtual int soundWhenHurt() const
     {
         return SOUND_PED_HURT;
@@ -287,24 +297,97 @@ protected:
     {
         return SOUND_PED_DIE;
     }
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //  New Virtual Functions
+    ///////////////////////////////////////////////////////////////////////////
+    
+    // Perform the action when the Ped hits the Racer. Return
+    // true if no further actions are needed, return false otherwise.
+    virtual bool hitRacerAndPossiblyReturn() = 0;
+    
+    // Pick a new speed/direction for the new movement plan
+    virtual void pickSpeedAndDir();
+    
+    // Attack the Racer if appropriate.
+    virtual void possiblyAttack()
+    {
+    }
+    
+    // Adjust the Ped's speed with respect to other objects if needed and
+    // return true, otherwise return false.
+    virtual bool possiblyAdjustSpeedAndReturn()
+    {
+        return false;
+    }
+    
+    // Drop the correct type of goodie/oil slick when the Ped is killed.
+    virtual void dropGoodie()
+    {
+    }
+    
+    // How many points are added when this object is killed?
+    virtual int getScore()
+    {
+        return 0;
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //  New Non-Virtual Functions
+    ///////////////////////////////////////////////////////////////////////////
+    
+    // Move the pedestrian.  If the pedestrian doesn't go off screen and
+    // should pick a new movement plan, pick a new plan.
+    void moveAndPossiblyPickPlan();
+    
+    // Get the pedestrian's horizontal speed
+    int getHspeed() const
+    {
+        return m_hspeed;
+    }
+
+    // Set the pedestrian's horizontal speed
+    void setHspeed(int s)
+    {
+        m_hspeed = s;
+    }
 private:
-    int m_hspeed;
-    int m_plan;
+    int m_hspeed; // horizontal speed
+    int m_plan; // movement plan distance
 };
 
+///////////////////////////////////////////////////////////////////////////
+//  Class for Human Pedestrians
+///////////////////////////////////////////////////////////////////////////
 class HumanPedestrian : public Pedestrian
 {
 public:
     HumanPedestrian(StudentWorld* sw, double x, double y);
     
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
+    
     virtual bool takeDamageAndPossiblyDie(int hp);
+protected:
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
+    
     virtual bool hitRacerAndPossiblyReturn();
 };
 
+///////////////////////////////////////////////////////////////////////////
+//  Class for Zombie Pedestrians
+///////////////////////////////////////////////////////////////////////////
 class ZombiePedestrian : public Pedestrian
 {
 public:
     ZombiePedestrian(StudentWorld* sw, double x, double y);
+protected:
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
     
     virtual bool hitRacerAndPossiblyReturn();
     virtual void possiblyAttack();
@@ -315,13 +398,20 @@ public:
         return SCORE_ZOMBIE;
     }
 private:
-    int m_ticks;
+    int m_ticks; // number of ticks until next grunt
 };
 
+///////////////////////////////////////////////////////////////////////////
+//  Class for Zombie Cabs
+///////////////////////////////////////////////////////////////////////////
 class ZombieCab : public Pedestrian
 {
 public:
     ZombieCab(StudentWorld* sw, double x, double y, double vspeed);
+protected:
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
     
     virtual bool hitRacerAndPossiblyReturn();
     virtual void pickSpeedAndDir();
@@ -343,42 +433,76 @@ protected:
         return SOUND_VEHICLE_DIE;
     }
 private:
-    bool m_damaged;
+    bool m_damaged; // if the cab has damaged the racer
 };
 
+///////////////////////////////////////////////////////////////////////////
+//  Class for Holy Water Spray Projectile
+///////////////////////////////////////////////////////////////////////////
 class Spray : public Actor
 {
 public:
     Spray(StudentWorld* sw, double x, double y, int dir);
     
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
     virtual void doSomething();
 private:
-    int m_distance;
+    int m_distance; // remaining traveling distance of the projectile
 };
 
+///////////////////////////////////////////////////////////////////////////
+//  Class for Goodies/Oil Slicks/Souls
+///////////////////////////////////////////////////////////////////////////
 class GhostRacerActivatedObject : public Actor
 {
 public:
     GhostRacerActivatedObject(StudentWorld* sw, int imageID, double x, double y, double size, int dir);
     
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
     virtual void doSomething();
     virtual bool beSprayedIfAppropriate();
+protected:
+    ///////////////////////////////////////////////////////////////////////////
+    //  New Virtual Functions
+    ///////////////////////////////////////////////////////////////////////////
+    
+    // Return whether the object is affected by a holy water projectile.
     virtual bool isSprayable() const = 0;
+    
+    // Return whether the object dies after activation.
     virtual bool selfDestructs() const = 0;
-    virtual int getScoreIncrease() const = 0;
+    
+    // Do the object's special activity (increase health, spin Ghostracer, etc.)
     virtual void doActivity(Racer* gr) = 0;
+    
+    // Return the object's increase to the score when activated.
+    virtual int getScoreIncrease() const = 0;
+    
+    // Rotate the object if appropriate
     virtual void possiblyRotate() {};
-
+    
+    // Return the sound to be played when the object is activated.
     virtual int getSound() const
     {
         return SOUND_GOT_GOODIE;
     }
 };
 
+///////////////////////////////////////////////////////////////////////////
+//  Class for Oil Slicks
+///////////////////////////////////////////////////////////////////////////
 class OilSlick : public GhostRacerActivatedObject
 {
 public:
     OilSlick(StudentWorld* sw, double x, double y);
+protected:
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
     
     virtual void doActivity(Racer* gr);
     
@@ -403,10 +527,17 @@ public:
     }
 };
 
+///////////////////////////////////////////////////////////////////////////
+//  Class for Healing Goodies
+///////////////////////////////////////////////////////////////////////////
 class HealingGoodie : public GhostRacerActivatedObject
 {
 public:
     HealingGoodie(StudentWorld* sw, double x, double y);
+protected:
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
     
     virtual void doActivity(Racer* gr);
     
@@ -426,10 +557,17 @@ public:
     }
 };
 
+///////////////////////////////////////////////////////////////////////////
+//  Class for Holy Water Goodies
+///////////////////////////////////////////////////////////////////////////
 class HolyWaterGoodie : public GhostRacerActivatedObject
 {
 public:
     HolyWaterGoodie(StudentWorld* sw, double x, double y);
+protected:
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
     
     virtual void doActivity(Racer* gr);
     
@@ -449,10 +587,17 @@ public:
     }
 };
 
+///////////////////////////////////////////////////////////////////////////
+//  Class for Soul Goodies
+///////////////////////////////////////////////////////////////////////////
 class SoulGoodie : public GhostRacerActivatedObject
 {
 public:
     SoulGoodie(StudentWorld* sw, double x, double y);
+protected:
+    ///////////////////////////////////////////////////////////////////////////
+    //  Overridden Functions
+    ///////////////////////////////////////////////////////////////////////////
     
     virtual void doActivity(Racer* gr);
     
