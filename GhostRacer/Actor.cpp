@@ -324,16 +324,12 @@ void ZombieCab::doSomething()
     
     if (getVspeed() > getWorld()->getRacer()->getVspeed() && getWorld()->hasActorInFrontOfOrBehindCab(this, IN_FRONT_OF))
     {
-        cerr << "Old Speed " << getVspeed();
         setVspeed(getVspeed() - ZOMBIE_CAB_VSPEED_DELTA);
-        cerr << " New Speed After Lowering " << ZOMBIE_CAB_VSPEED_DELTA << " is " << getVspeed() << endl;
         return;
     }
     else if (getVspeed() <= getWorld()->getRacer()->getVspeed() && getWorld()->hasActorInFrontOfOrBehindCab(this, BEHIND))
     {
-        cerr << "Old Speed " << getVspeed();
         setVspeed(getVspeed() + ZOMBIE_CAB_VSPEED_DELTA);
-        cerr << " New Speed After Raising " << ZOMBIE_CAB_VSPEED_DELTA << " is " << getVspeed() << endl;
         return;
     }
     

@@ -92,11 +92,9 @@ void StudentWorld::determineCabPosAndPlan()
     double startY = -1;
     double startVspeed = -1;
     int cur_lane = randInt(LEFT_LANE, RIGHT_LANE);
-    cerr << "==========" << endl;
     for (int i = 0; i < NUM_LANES; i++)
     {
         int lane = (cur_lane + i) % NUM_LANES;
-        cerr << " checking lane: " << lane << endl;
         
         Actor* bottom_actor = nullptr;
         double bottom_y = VIEW_HEIGHT;
@@ -128,7 +126,6 @@ void StudentWorld::determineCabPosAndPlan()
             startY = SPRITE_HEIGHT/2;
             startVspeed = m_racer->getVspeed() + randInt(ZOMBIE_CAB_VSPEED_OFFSET_MIN, ZOMBIE_CAB_VSPEED_OFFSET_MAX);
             addCab = true;
-            cerr << " add at bottom of lane: " << cur_lane << endl;
             break;
         }
         
@@ -162,19 +159,16 @@ void StudentWorld::determineCabPosAndPlan()
             startY = VIEW_HEIGHT - SPRITE_HEIGHT/2;
             startVspeed = m_racer->getVspeed() - randInt(ZOMBIE_CAB_VSPEED_OFFSET_MIN, ZOMBIE_CAB_VSPEED_OFFSET_MAX);
             addCab = true;
-            cerr << " add at top of lane: " << cur_lane << endl;
             break;
         }
     }
     
     if (addCab)
     {
-        cerr << "* Add cab at lane " << cur_lane << " at x: " << getLaneCenter(cur_lane) << " and y: " << startY << " *" << endl;
         Actor* cab = new ZombieCab(this, getLaneCenter(cur_lane), startY);
         cab->setVspeed(startVspeed);
         m_actors.push_back(cab);
     }
-    cerr << "==========" << endl;
 }
 
 void StudentWorld::cleanUp()
