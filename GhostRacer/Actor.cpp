@@ -4,7 +4,9 @@
 
 using namespace std;
 
+///////////////////////////////////////////////////////////////////////////
 // Actor
+///////////////////////////////////////////////////////////////////////////
 
 Actor::Actor(StudentWorld* world, int imageID, double x, double y, double size, int dir, int depth)
  : GraphObject(imageID, x, y, dir, size, depth), m_world(world), m_alive(true)
@@ -13,14 +15,19 @@ Actor::Actor(StudentWorld* world, int imageID, double x, double y, double size, 
 
 bool Actor::moveRelative(double dx)
 {
+    // calculate relative speed
     double dy = getVspeed() - getWorld()->getRacer()->getVspeed();
     moveTo(getX() + dx, getY() + dy);
+    
+    // check out-of-bound
     int curX = getX();
     int curY = getY();
     return curX >= 0 && curY >= 0 && curX <= VIEW_WIDTH && curY <= VIEW_HEIGHT;
 }
 
+///////////////////////////////////////////////////////////////////////////
 // BorderLine
+///////////////////////////////////////////////////////////////////////////
 
 BorderLine::BorderLine(StudentWorld* world, double x, double y, bool isYellow)
  : Actor(world, getIID(isYellow), x, y, SIZE_BORDER, right, DEPTH_BORDER)
@@ -30,7 +37,7 @@ BorderLine::BorderLine(StudentWorld* world, double x, double y, bool isYellow)
 
 void BorderLine::doSomething()
 {
-    if (!moveRelative(0))
+    if (!moveRelative(0)) // if out of bound after moving
         die();
 }
 
@@ -38,7 +45,9 @@ int BorderLine::getIID(bool isYellow) {
     return isYellow ? IID_YELLOW_BORDER_LINE : IID_WHITE_BORDER_LINE;
 }
 
+///////////////////////////////////////////////////////////////////////////
 // Agent
+///////////////////////////////////////////////////////////////////////////
 
 Agent::Agent(StudentWorld* sw, int imageID, double x, double y, double size, int dir, int hp)
 : Actor(sw, imageID, x, y, size, dir, DEPTH_AGENT), m_hp(hp)
@@ -48,8 +57,8 @@ Agent::Agent(StudentWorld* sw, int imageID, double x, double y, double size, int
 void Agent::addHP(int hp)
 {
     m_hp += hp;
-    if (m_hp > HP_RACER) // only the racer can be healed
-        m_hp = HP_RACER;
+    if (m_hp > HP_RACER) // healing limit
+        m_hp = HP_RACER; // only the racer can be healed
 }
 
 bool Agent::takeDamageAndPossiblyDie(int hp)
@@ -57,7 +66,7 @@ bool Agent::takeDamageAndPossiblyDie(int hp)
     m_hp -= hp;
     if (m_hp <= 0)
     {
-        m_hp = 0;
+        m_hp = 0; // hp can't be negative
         die();
         getWorld()->playSound(soundWhenDie());
         return true;
@@ -66,7 +75,9 @@ bool Agent::takeDamageAndPossiblyDie(int hp)
     return false;
 }
 
+///////////////////////////////////////////////////////////////////////////
 // Racer
+///////////////////////////////////////////////////////////////////////////
 
 Racer::Racer(StudentWorld* sw, double x, double y)
  : Agent(sw, IID_GHOST_RACER, x, y, SIZE_RACER, up, HP_RACER), m_sprays(RACER_SPRAYS)
@@ -93,48 +104,7 @@ void Racer::doSomething()
     }
     else
     {
-        int ch;
-        if (getWorld()->getKey(ch))
-        {
-            switch (ch)
-            {
-                case KEY_PRESS_SPACE:
-                    if (m_sprays > 0)
-                    {
-                        double spray_x = getX() + SPRITE_HEIGHT * cos(getDirection()*1.0 / 360 * 2 * PI);
-                        double spray_y = getY() + SPRITE_HEIGHT * sin(getDirection()*1.0 / 360 * 2 * PI);
-                        getWorld()->addActor(new Spray(getWorld(), spray_x, spray_y, getDirection()));
-                        getWorld()->playSound(SOUND_PLAYER_SPRAY);
-                        m_sprays--;
-                    }
-                    break;
-                case KEY_PRESS_LEFT:
-                    if (getDirection() < RACER_DIR_LEFT_LIM)
-                    {
-                        setDirection(getDirection() + RACER_DIR_DELTA);
-                    }
-                    break;
-                case KEY_PRESS_RIGHT:
-                    if (getDirection() > RACER_DIR_RIGHT_LIM)
-                    {
-                        setDirection(getDirection() - RACER_DIR_DELTA);
-                    }
-                    break;
-                case KEY_PRESS_UP:
-                    if (getVspeed() < RACER_SPEED_MAX)
-                    {
-                        setVspeed(getVspeed() + RACER_SPEED_DELTA);
-                    }
-                    break;
-                case KEY_PRESS_DOWN:
-                    if (getVspeed() > RACER_SPEED_MIN)
-                    {
-                        setVspeed(getVspeed() - RACER_SPEED_DELTA);
-                    }
-                default:
-                    break;
-            }
-        }
+        processInput();
     }
     
     moveRelative(RACER_MAX_SHIFT_PER_TICK* cos(getDirection()*1.0 / 360 * 2 * PI) );
@@ -154,6 +124,52 @@ void Racer::spin()
         dir = RACER_SPIN_LEFT_LIM;
     
     setDirection(dir);
+}
+
+void Racer::processInput()
+{
+    int ch;
+    if (getWorld()->getKey(ch))
+    {
+        switch (ch)
+        {
+            case KEY_PRESS_SPACE:
+                if (m_sprays > 0)
+                {
+                    double spray_x = getX() + SPRITE_HEIGHT * cos(getDirection()*1.0 / 360 * 2 * PI);
+                    double spray_y = getY() + SPRITE_HEIGHT * sin(getDirection()*1.0 / 360 * 2 * PI);
+                    getWorld()->addActor(new Spray(getWorld(), spray_x, spray_y, getDirection()));
+                    getWorld()->playSound(SOUND_PLAYER_SPRAY);
+                    m_sprays--;
+                }
+                break;
+            case KEY_PRESS_LEFT:
+                if (getDirection() < RACER_DIR_LEFT_LIM)
+                {
+                    setDirection(getDirection() + RACER_DIR_DELTA);
+                }
+                break;
+            case KEY_PRESS_RIGHT:
+                if (getDirection() > RACER_DIR_RIGHT_LIM)
+                {
+                    setDirection(getDirection() - RACER_DIR_DELTA);
+                }
+                break;
+            case KEY_PRESS_UP:
+                if (getVspeed() < RACER_SPEED_MAX)
+                {
+                    setVspeed(getVspeed() + RACER_SPEED_DELTA);
+                }
+                break;
+            case KEY_PRESS_DOWN:
+                if (getVspeed() > RACER_SPEED_MIN)
+                {
+                    setVspeed(getVspeed() - RACER_SPEED_DELTA);
+                }
+            default:
+                break;
+        }
+    }
 }
 
 // Pedestrian

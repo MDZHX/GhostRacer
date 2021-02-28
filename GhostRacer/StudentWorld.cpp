@@ -228,12 +228,12 @@ void StudentWorld::addActors()
     if (addHuman == 0)
         m_actors.push_back(new HumanPedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT));
     
-    int soul = randInt(0, CHANCE_OF_LOST_SOUL - 1);
-    if (soul == 0)
+    int addSoul = randInt(0, CHANCE_OF_LOST_SOUL - 1);
+    if (addSoul == 0)
         m_actors.push_back(new SoulGoodie(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
     
-    int refill = randInt(0, CHANCE_OF_REFILL_BASE + CHANCE_OF_REFILL_MULTIPLIER * getLevel() - 1);
-    if (refill == 0)
+    int addRefill = randInt(0, CHANCE_OF_REFILL_BASE + CHANCE_OF_REFILL_MULTIPLIER * getLevel() - 1);
+    if (addRefill == 0)
         m_actors.push_back(new HolyWaterGoodie(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT));
 }
 
