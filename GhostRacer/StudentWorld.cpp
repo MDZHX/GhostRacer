@@ -43,10 +43,14 @@ int StudentWorld::init()
 
 int StudentWorld::move()
 {
+    // refer to the pseudocode in the spec
+    
+    // since racer is not in the collection, process it separately
     m_racer->doSomething();
     if (!m_racer->alive())
         return updateGameStatAndReturn(GWSTATUS_PLAYER_DIED);
     
+    // process all actors
     for (list<Actor*>::iterator it = m_actors.begin(); it != m_actors.end(); it++)
     {
         if ((*it)->alive())
@@ -78,6 +82,7 @@ void StudentWorld::cleanUp()
         delete *it;
     }
     
+    // clear the collection of pointers
     m_actors.clear();
 }
 
@@ -95,9 +100,11 @@ Racer* StudentWorld::getOverlappingGhostRacer(Actor* a) const
 
 bool StudentWorld::sprayFirstAppropriateActor(Actor* a)
 {
+    // only itertate through other actors since racer can't be sprayed
     for (list<Actor*>::const_iterator it = m_actors.begin(); it != m_actors.end(); it++)
     {
-        if ((*it)->alive() && overlaps(a, *it) && (*it)->beSprayedIfAppropriate())
+        // return true when sucessfully spray the first overlapping actor
+        if (*it != a && (*it)->alive() && overlaps(a, *it) && (*it)->beSprayedIfAppropriate())
         {
             return true;
         }
