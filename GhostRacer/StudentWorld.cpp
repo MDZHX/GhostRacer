@@ -117,14 +117,15 @@ bool StudentWorld::hasActorInFrontOfOrBehindCab(Actor* cab, int code) const
     int lane = laneOf(cab);
     for (list<Actor*>::const_iterator it = m_actors.begin(); it != m_actors.end(); it++)
     {
-        if ((*it) != cab &&
-            (*it)->alive() &&
-            (*it)->isCollisionAvoidanceWorthy() &&
-            laneOf(*it) == lane &&
-            isInFrontOfOrBehind(*it, cab, code))
+        if ((*it) != cab && // not the cab itself
+            (*it)->alive() && // has to be alive
+            (*it)->isCollisionAvoidanceWorthy() && // has to be collision avoidance-worthy
+            laneOf(*it) == lane && // on the same lane
+            isInFrontOfOrBehind(*it, cab, code)) // in front of/behind in a certain range
             return true;
     }
     
+    // check the racer as well
     if (code == IN_FRONT_OF && laneOf(m_racer) == lane && isInFrontOfOrBehind(m_racer, cab, code))
         return true;
     return false;
@@ -154,6 +155,7 @@ void StudentWorld::createYellowBorders(int y)
 
 bool StudentWorld::overlaps(const Actor* a1, const Actor* a2) const
 {
+    // algorithm from the spec
     double delta_x = abs(a1->getX() - a2->getX());
     double delta_y = abs(a1->getY() - a2->getY());
     double radius_sum = a1->getRadius() + a2->getRadius();
@@ -162,6 +164,7 @@ bool StudentWorld::overlaps(const Actor* a1, const Actor* a2) const
 
 int StudentWorld::laneOf(const Actor* a) const
 {
+    // the way to classify lanes is from the spec
     double x = a->getX();
     if (x >= LEFT_EDGE && x < LEFT_EDGE + ROAD_WIDTH/3)
         return LEFT_LANE;
@@ -175,6 +178,7 @@ int StudentWorld::laneOf(const Actor* a) const
 
 double StudentWorld::getLaneCenter(int lane) const
 {
+    // coordinate of each lane is detailed in the spec
     if (lane == LEFT_LANE)
         return ROAD_CENTER - ROAD_WIDTH/3;
     else if (lane == MID_LANE)
@@ -187,6 +191,7 @@ double StudentWorld::getLaneCenter(int lane) const
 
 bool StudentWorld::isInFrontOfOrBehind(Actor* a, Actor* cab, int code) const
 {
+    // also check whether the object is within a certain range
     if (code == IN_FRONT_OF)
         return a->getY() >= cab->getY() && a->getY() - cab->getY() < ZOMBIE_CAB_COLLISION_RANGE;
     else
@@ -195,11 +200,13 @@ bool StudentWorld::isInFrontOfOrBehind(Actor* a, Actor* cab, int code) const
 
 int StudentWorld::calcSouls2Save() const
 {
+    // formula from the spec
     return 2 * getLevel() + 5;
 }
 
 void StudentWorld::initBorders()
 {
+    // initialize borders as the spec requires
     int N = VIEW_HEIGHT / SPRITE_HEIGHT;
     for (int i = 0; i < N; i++)
     {
@@ -212,12 +219,16 @@ void StudentWorld::initBorders()
         createWhiteBorders(i * (HEIGHT_WHITE_BORDER));
     }
     
+    // record the y coordinate of the top white border
     m_top_border = (M-1) * (HEIGHT_WHITE_BORDER);
 }
 
 void StudentWorld::addActors()
 {
+    // add new borders when needed, as required by the spec
     addBorders();
+    
+    // add each type of actor as required by the spec
     
     int addCab = randInt(0, max(CHANCE_OF_VEHICLE_BASE - getLevel() * CHANCE_OF_VEHICLE_MULTIPLIER, CHANCE_OF_VEHICLE_MIN) - 1);
     if (addCab == 0)
@@ -246,7 +257,10 @@ void StudentWorld::addActors()
 
 void StudentWorld::addBorders()
 {
+    // current position of the top white border
     m_top_border = m_top_border + (VSPEED_BORDER - m_racer->getVspeed());
+    
+    // algorithm provided by the spec
     int delta_y = NEW_BORDER_Y - m_top_border;
     if (delta_y >= SPRITE_HEIGHT)
     {
@@ -255,15 +269,20 @@ void StudentWorld::addBorders()
     if (delta_y >= HEIGHT_WHITE_BORDER)
     {
         createWhiteBorders(NEW_BORDER_Y);
+        // update the top white border position
         m_top_border = NEW_BORDER_Y;
     }
 }
 
 void StudentWorld::addACabIfPossible()
 {
-     int cur_lane = randInt(LEFT_LANE, RIGHT_LANE);
-     for (int i = 0; i < NUM_LANES; i++)
+    // followed the algorithm provided in the spec
+    
+    // pick a random lane to start with
+    int cur_lane = randInt(LEFT_LANE, RIGHT_LANE);
+    for (int i = 0; i < NUM_LANES; i++)
     {
+        // check each lane
         int lane = (cur_lane + i) % NUM_LANES;
         
         if (addCabInCurrentLaneIfPossible(lane, BOTTOM))
@@ -278,10 +297,13 @@ bool StudentWorld::addCabInCurrentLaneIfPossible(int lane, int code)
     Actor* a = nullptr;
     double y = 0;
     
+    // find the actor that's closest to the top/bottom
     for (list<Actor*>::const_iterator it = m_actors.begin(); it != m_actors.end(); it++)
     {
+        // only consider alive collision avoidance-worthy actors in the given lane
         if ((*it)->alive() && (*it)->isCollisionAvoidanceWorthy() && laneOf(*it) == lane)
         {
+            // initially there is not actor to compare with
             if (a == nullptr || isCloserToTopOrBottom(*it, y, code))
             {
                 a = *it;
@@ -290,6 +312,7 @@ bool StudentWorld::addCabInCurrentLaneIfPossible(int lane, int code)
         }
     }
     
+    // consider the racer as well
     if (laneOf(m_racer) == lane)
     {
         if (a == nullptr || isCloserToTopOrBottom(m_racer, y, code))
@@ -299,6 +322,7 @@ bool StudentWorld::addCabInCurrentLaneIfPossible(int lane, int code)
         }
     }
     
+    // add a cab if possible
     if (a == nullptr || hasRoomForCab(y, code))
     {
         m_actors.push_back(new ZombieCab(this, getLaneCenter(lane), getStartYForCab(code), getStartVspeedForCab(code)));
@@ -317,6 +341,7 @@ bool StudentWorld::isCloserToTopOrBottom(Actor* a, double y, int code)
 
 bool StudentWorld::hasRoomForCab(double y, int code)
 {
+    // followed the spec's standard
     if (code == BOTTOM)
         return y > VIEW_HEIGHT/3;
     else
@@ -325,6 +350,7 @@ bool StudentWorld::hasRoomForCab(double y, int code)
 
 double StudentWorld::getStartYForCab(int code)
 {
+    // followed the spec's standard
     if (code == BOTTOM)
         return SPRITE_HEIGHT/2;
     else
@@ -333,6 +359,7 @@ double StudentWorld::getStartYForCab(int code)
 
 double StudentWorld::getStartVspeedForCab(int code)
 {
+    // followed the spec's standard
     int offset = randInt(ZOMBIE_CAB_VSPEED_OFFSET_MIN, ZOMBIE_CAB_VSPEED_OFFSET_MAX);
     if (code == BOTTOM)
         return m_racer->getVspeed() + offset;
@@ -359,13 +386,16 @@ void StudentWorld::deleteDeadActors()
 
 int StudentWorld::updateGameStatAndReturn(const int status)
 {
+    // before returning, update bonus and text in this tick
     updateBonus();
     updateText();
+    // add bonus and play sound if finished the level
     if (status == GWSTATUS_FINISHED_LEVEL)
     {
         increaseScore(m_bonus);
         playSound(SOUND_FINISHED_LEVEL);
     }
+    // decrement lives if player died
     else if (status == GWSTATUS_PLAYER_DIED)
     {
         decLives();
