@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Ghost Racer a post-apocalyptic 2D driving/shooting game. Our hero drives the Ghost Racer north on the 405 freeway. Zombies roam around, and some are even driving taxi cabs. The few humans that are left wander aimlessly. And the souls of the recently deceased have convened on the 405 freeway, waiting for someone to free them.
+Ghost Racer a post-apocalyptic 2D driving/shooting game. Our hero drives the Ghost Racer north on the 405 freeway. Zombies roam around, and some are even driving taxi cabs. The few humans that are left wander aimlessly, and the souls of the recently deceased have convened on the 405 freeway, waiting for someone to free them.
 
 ## Gameplay
 
